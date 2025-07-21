@@ -6,13 +6,9 @@ export const NAV_DATA = [
     items: [
       {
         title: "Dashboard",
+         url: "/",
         icon: Icons.HomeIcon,
-        items: [
-          {
-            title: "eCommerce",
-            url: "/",
-          },
-        ],
+        items: [],
       },
       {
         title: "Calendar",
@@ -21,10 +17,37 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Profile",
-        url: "/profile",
+        title: "Students",
         icon: Icons.User,
-        items: [],
+        items: [
+          {
+            title: "View Student",
+            url: "/students/viewstudents",
+          },
+          {
+            title: "Create Student",
+            url: "/students/createstudent",
+          },
+          {
+            title: "Add Student",
+            url: "/students/addstudent",
+          },
+        ]
+        ,
+      }, 
+      { title: "Quizes",
+        url: "/quizes",
+        icon: Icons.Authentication,
+        items: [
+          {
+            title: "View Quizes",
+            url: "/quizes/viewquizes",
+          },
+          {
+            title: "Create Quiz",
+            url: "/quizes/createquiz",
+          },
+        ]
       },
       {
         title: "Forms",

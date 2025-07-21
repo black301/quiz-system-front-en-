@@ -9,24 +9,18 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Tables",
+  title: "Students",
 };
 
 const TablesPage = () => {
   return (
     <>
-      <Breadcrumb pageName="Tables" />
+      <Breadcrumb pageName="Students" />
 
-      <div className="space-y-10">
-        <Suspense fallback={<TopChannelsSkeleton />}>
-          <TopChannels />
-        </Suspense>
-        
+      <div className="space-y-10">        
         <Suspense fallback={<TopProductsSkeleton />}>
           <TopStudents />
         </Suspense>
-
-        <InvoiceTable />
       </div>
     </>
   );

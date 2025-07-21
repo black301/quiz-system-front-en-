@@ -1,5 +1,5 @@
 import type { IconProps } from "@/types/icon-props";
-
+//deleted (not used)
 export function SearchIcon(props: IconProps) {
   return (
     <svg

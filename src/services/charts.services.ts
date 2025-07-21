@@ -6,22 +6,22 @@ export async function getDevicesUsedData(
 
   const data = [
     {
-      name: "Desktop",
+      name: "level 3",
       percentage: 0.65,
       amount: 1625,
     },
     {
-      name: "Tablet",
+      name: "level 2",
       percentage: 0.1,
       amount: 250,
     },
     {
-      name: "Mobile",
+      name: "level 1",
       percentage: 0.2,
       amount: 500,
     },
     {
-      name: "Unknown",
+      name: "level 4",
       percentage: 0.05,
       amount: 125,
     },
