@@ -4,13 +4,8 @@ import type React from "react"
 import { useState } from "react"
 
 interface TestData {
-  testName: string
-  subject: string
-  testType: string
+  title: string
   duration: string
-  difficulty: string
-  instructions: string
-  description: string
 }
 
 interface Question {
@@ -31,6 +26,7 @@ interface QuestionBuilderProps {
   onDeleteQuestion: (questionId: string) => void
   onFinalSubmit: () => void
   onBackToTestDetails: () => void
+  isEditing?: boolean // New prop to indicate if we're in edit mode
 }
 
 export function QuestionBuilder({
@@ -41,6 +37,7 @@ export function QuestionBuilder({
   onDeleteQuestion,
   onFinalSubmit,
   onBackToTestDetails,
+  isEditing = false,
 }: QuestionBuilderProps) {
   const [showQuestionForm, setShowQuestionForm] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
@@ -55,11 +52,10 @@ export function QuestionBuilder({
 
   const handleQuestionSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!currentQuestion.question || !currentQuestion.points) return
 
     const questionToSave: Question = {
-      id: editingQuestion?.id || Date.now().toString(),
+      id: editingQuestion?.id || `new-${Date.now()}`, // Use "new-" prefix for new questions in edit mode
       type: currentQuestion.type as Question["type"],
       question: currentQuestion.question,
       points: currentQuestion.points,
@@ -88,15 +84,37 @@ export function QuestionBuilder({
   }
 
   const handleEditQuestion = (question: Question) => {
-    setCurrentQuestion(question)
+    setCurrentQuestion({
+      ...question,
+      options: question.options || ["", "", "", ""],
+    })
     setEditingQuestion(question)
     setShowQuestionForm(true)
+  }
+
+  const handleDeleteQuestion = (questionId: string) => {
+    if (confirm("Are you sure you want to delete this question?")) {
+      onDeleteQuestion(questionId)
+    }
   }
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...(currentQuestion.options || ["", "", "", ""])]
     newOptions[index] = value
     setCurrentQuestion((prev) => ({ ...prev, options: newOptions }))
+  }
+
+  const handleCancelForm = () => {
+    setShowQuestionForm(false)
+    setEditingQuestion(null)
+    setCurrentQuestion({
+      type: "multiple-choice",
+      question: "",
+      points: 1,
+      options: ["", "", "", ""],
+      correctAnswer: "",
+      explanation: "",
+    })
   }
 
   const totalPoints = questions.reduce((sum, q) => sum + q.points, 0)
@@ -107,9 +125,9 @@ export function QuestionBuilder({
       <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-dark dark:text-white">{testData.testName}</h3>
+            <h3 className="text-2xl font-bold text-dark dark:text-white">{testData.title}</h3>
             <p className="text-body-color dark:text-dark-6">
-              {testData.subject} • {testData.duration} minutes • {questions.length} questions • {totalPoints} points
+              {testData.duration} minutes • {questions.length} questions • {totalPoints} points
             </p>
           </div>
           <button
@@ -153,6 +171,12 @@ export function QuestionBuilder({
                       <span className="text-body-sm text-body-color dark:text-dark-6">
                         {question.points} {question.points === 1 ? "point" : "points"}
                       </span>
+                      {/* Show indicator for new questions in edit mode */}
+                      {isEditing && question.id.startsWith("new-") && (
+                        <span className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          New
+                        </span>
+                      )}
                     </div>
                     <p className="text-dark dark:text-white">{question.question}</p>
                     {question.options && (
@@ -175,6 +199,22 @@ export function QuestionBuilder({
                         ))}
                       </div>
                     )}
+                    {/* Show correct answer for non-multiple choice questions */}
+                    {question.type !== "multiple-choice" && question.correctAnswer && (
+                      <div className="mt-2">
+                        <span className="text-body-sm font-medium text-green-600 dark:text-green-400">
+                          Expected Answer: {question.correctAnswer}
+                        </span>
+                      </div>
+                    )}
+                    {/* Show explanation if available */}
+                    {question.explanation && (
+                      <div className="mt-2">
+                        <span className="text-body-sm text-body-color dark:text-dark-6">
+                          <strong>Explanation:</strong> {question.explanation}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -184,7 +224,7 @@ export function QuestionBuilder({
                       Edit
                     </button>
                     <button
-                      onClick={() => onDeleteQuestion(question.id)}
+                      onClick={() => handleDeleteQuestion(question.id)}
                       className="rounded px-3 py-1 text-xs font-medium text-red hover:bg-red hover:text-white"
                     >
                       Delete
@@ -202,7 +242,7 @@ export function QuestionBuilder({
               onClick={onFinalSubmit}
               className="rounded-[7px] bg-green-600 px-6 py-3 font-medium text-white hover:bg-opacity-90"
             >
-              Create Test ({questions.length} questions, {totalPoints} points)
+              {isEditing ? "Update" : "Create"} Test ({questions.length} questions, {totalPoints} points)
             </button>
           </div>
         )}
@@ -217,18 +257,7 @@ export function QuestionBuilder({
                 {editingQuestion ? "Edit Question" : "Add New Question"}
               </h4>
               <button
-                onClick={() => {
-                  setShowQuestionForm(false)
-                  setEditingQuestion(null)
-                  setCurrentQuestion({
-                    type: "multiple-choice",
-                    question: "",
-                    points: 1,
-                    options: ["", "", "", ""],
-                    correctAnswer: "",
-                    explanation: "",
-                  })
-                }}
+                onClick={handleCancelForm}
                 className="text-body-color hover:text-dark dark:text-dark-6 dark:hover:text-white"
               >
                 ✕
@@ -249,6 +278,7 @@ export function QuestionBuilder({
                         ...prev,
                         type: e.target.value as Question["type"],
                         options: e.target.value === "multiple-choice" ? ["", "", "", ""] : undefined,
+                        correctAnswer: "", // Reset correct answer when type changes
                       }))
                     }
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
@@ -266,10 +296,11 @@ export function QuestionBuilder({
                   <input
                     type="number"
                     min="1"
-                    value={currentQuestion.points}
+                    value={currentQuestion.points || ""}
                     onChange={(e) =>
-                      setCurrentQuestion((prev) => ({ ...prev, points: Number.parseInt(e.target.value) }))
+                      setCurrentQuestion((prev) => ({ ...prev, points: Number.parseInt(e.target.value) || 1 }))
                     }
+                    required
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                   />
                 </div>
@@ -281,9 +312,9 @@ export function QuestionBuilder({
                   Question <span className="text-red">*</span>
                 </label>
                 <textarea
-                  rows={1}
+                  rows={3}
                   placeholder="Enter your question"
-                  value={currentQuestion.question}
+                  value={currentQuestion.question || ""}
                   onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, question: e.target.value }))}
                   required
                   className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
@@ -368,7 +399,7 @@ export function QuestionBuilder({
                   <textarea
                     rows={currentQuestion.type === "essay" ? 4 : 2}
                     placeholder="Enter the expected answer or key points"
-                    value={currentQuestion.correctAnswer}
+                    value={currentQuestion.correctAnswer || ""}
                     onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, correctAnswer: e.target.value }))}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                   />
@@ -383,7 +414,7 @@ export function QuestionBuilder({
                 <textarea
                   rows={2}
                   placeholder="Provide an explanation for the correct answer"
-                  value={currentQuestion.explanation}
+                  value={currentQuestion.explanation || ""}
                   onChange={(e) => setCurrentQuestion((prev) => ({ ...prev, explanation: e.target.value }))}
                   className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                 />
@@ -393,10 +424,7 @@ export function QuestionBuilder({
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowQuestionForm(false)
-                    setEditingQuestion(null)
-                  }}
+                  onClick={handleCancelForm}
                   className="flex-1 rounded-[7px] border border-stroke px-4 py-3 font-medium text-dark hover:bg-gray-1 dark:border-dark-3 dark:text-white dark:hover:bg-dark-2"
                 >
                   Cancel

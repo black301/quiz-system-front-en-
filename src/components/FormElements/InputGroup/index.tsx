@@ -3,6 +3,7 @@ import { type HTMLInputTypeAttribute, useId } from "react";
 
 type InputGroupProps = {
   className?: string;
+  readOnly?: boolean;
   label: string;
   placeholder: string;
   type: HTMLInputTypeAttribute;
@@ -21,6 +22,7 @@ type InputGroupProps = {
 
 const InputGroup: React.FC<InputGroupProps> = ({
   className,
+  readOnly,
   label,
   type,
   placeholder,
@@ -69,6 +71,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
           )}
           required={required}
           disabled={disabled}
+          readOnly={readOnly}
           data-active={active}
         />
 

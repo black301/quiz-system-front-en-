@@ -1,9 +1,11 @@
 "use client";
+
 import { EmailIcon, PasswordIcon } from "@/assets/icons";
 import Link from "next/link";
 import React, { useState } from "react";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
+import { apiFetch } from "@/lib/api"; // Adjust path to match your file structure
 
 export default function SigninWithPassword() {
   const [data, setData] = useState({
@@ -13,6 +15,7 @@ export default function SigninWithPassword() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({
@@ -21,19 +24,47 @@ export default function SigninWithPassword() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // You can remove this code block
     setLoading(true);
+    setError("");
 
-    setTimeout(() => {
+    try {
+      const result = await apiFetch("/auth/login/", {
+        method: "POST",
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
+
+      // Set access token in cookie
+      const maxAge = data.remember ? 60 * 60 * 24 * 7 : 60 * 60 * 2; // 7d or 2h
+      document.cookie = `access=${result.access}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
+      // Store refresh token and user
+      localStorage.setItem("refresh", result.refresh);
+      localStorage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("access", result.access); // Optional but helps
+
+      // Redirect to home
+      window.location.href = "/";
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && (
+        <div className="mb-4 text-sm text-red-600 bg-red-100 p-2 rounded">
+          {error}
+        </div>
+      )}
+
       <InputGroup
         type="email"
         label="Email"

@@ -74,16 +74,6 @@ export const NAV_DATA = [
           },
         ],
       },
-      {
-        title: "Pages",
-        icon: Icons.Alphabet,
-        items: [
-          {
-            title: "Settings",
-            url: "/pages/settings",
-          },
-        ],
-      },
     ],
   },
   {
