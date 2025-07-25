@@ -103,26 +103,6 @@ export default function CourseManagementPage() {
         return "Unknown"
     }
   }
-
-  const getCourseIcon = (courseName: string) => {
-    const name = courseName.toLowerCase()
-    if (name.includes("math") || name.includes("calculus") || name.includes("algebra")) {
-      return "📊"
-    } else if (name.includes("science") || name.includes("physics") || name.includes("chemistry")) {
-      return "🔬"
-    } else if (name.includes("english") || name.includes("literature") || name.includes("writing")) {
-      return "📚"
-    } else if (name.includes("history") || name.includes("social")) {
-      return "🏛️"
-    } else if (name.includes("computer") || name.includes("programming") || name.includes("tech")) {
-      return "💻"
-    } else if (name.includes("art") || name.includes("design")) {
-      return "🎨"
-    } else {
-      return "📖"
-    }
-  }
-
   // Detail Mode - Show course details and students
   if (viewMode === "detail" && selectedCourse) {
     return (
@@ -138,7 +118,6 @@ export default function CourseManagementPage() {
                 Back to Course List
               </button>
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{getCourseIcon(selectedCourse.name)}</span>
                 <div>
                   <h3 className="text-2xl font-bold text-dark dark:text-white">{selectedCourse.name}</h3>
                   <p className="text-body-color dark:text-dark-6">Course Code: {selectedCourse.code}</p>
@@ -334,7 +313,6 @@ export default function CourseManagementPage() {
             >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{getCourseIcon(course.name)}</span>
                   <div>
                     <h4 className="text-lg font-semibold text-dark dark:text-white">{course.name}</h4>
                     <p className="text-sm text-body-color dark:text-dark-6">{course.code}</p>
