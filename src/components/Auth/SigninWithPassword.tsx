@@ -5,7 +5,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
-import { apiFetch } from "@/lib/api"; // Adjust path to match your file structure
+import { apiFetch } from "@/lib/api";
 
 export default function SigninWithPassword() {
   const [data, setData] = useState({
@@ -47,7 +47,7 @@ export default function SigninWithPassword() {
       localStorage.setItem("user", JSON.stringify(result.user));
       localStorage.setItem("access", result.access); // Optional but helps
 
-      // Redirect to home
+      // Redirect to Dashboard
       window.location.href = "/";
     } catch (err: any) {
       console.error("Login error:", err);
@@ -73,7 +73,7 @@ export default function SigninWithPassword() {
         name="email"
         handleChange={handleChange}
         value={data.email}
-        icon={<EmailIcon />}
+        icon={<EmailIcon/>}
       />
 
       <InputGroup

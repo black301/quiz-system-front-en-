@@ -136,15 +136,6 @@ export default function ForgotPasswordClient() {
                     Back to Sign In
                   </Link>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Need an account?{" "}
-                  <Link
-                    href="/auth/sign-up"
-                    className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    Sign up here
-                  </Link>
-                </div>
               </div>
             </div>
 
