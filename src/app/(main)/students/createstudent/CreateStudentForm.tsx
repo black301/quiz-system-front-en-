@@ -91,7 +91,7 @@ export function CreateStudentForm({ onBack }: CreateStudentFormProps) {
           </div>
           <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">Student Created Successfully!</h3>
           <p className="text-center text-body-color dark:text-dark-6">
-            Student "{formData.name}" has been created and added to your course.
+            Student &quot;{formData.name}&quot; has been created and added to your course.
           </p>
         </div>
       </div>

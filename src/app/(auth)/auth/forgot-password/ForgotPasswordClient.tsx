@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import type { FormEvent, ChangeEvent } from "react"
-import { useState } from "react"
-import "@/css/satoshi.css"
-import "@/css/style.css"
+import Image from "next/image";
+import Link from "next/link";
+import type { FormEvent, ChangeEvent } from "react";
+import { useState } from "react";
+import "@/css/satoshi.css";
+import "@/css/style.css";
 
 export default function ForgotPasswordClient() {
-  const [email, setEmail] = useState<string>("")
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
+  const [email, setEmail] = useState<string>("");
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setEmail(e.target.value)
-  }
+    setEmail(e.target.value);
+  };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle form submission logic here
-    console.log("Password reset requested for:", email)
-    setIsSubmitted(true)
-  }
+    console.log("Password reset requested for:", email);
+    setIsSubmitted(true);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl w-full">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-900 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl">
+        <div className="overflow-hidden rounded-lg bg-white shadow-md dark:bg-gray-800">
           <div className="flex">
             {/* Left Side - Form */}
-            <div className="w-full lg:w-1/2 p-8 lg:p-12">
+            <div className="w-full p-8 lg:w-1/2 lg:p-12">
               {/* Logo */}
               <div className="mb-8">
                 <Link href="/" className="inline-block">
@@ -51,18 +51,25 @@ export default function ForgotPasswordClient() {
 
               {/* Header */}
               <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reset Password</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Reset Password
+                </h1>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  Enter your email address and we'll send you a link to reset your password
+                  Enter your email address and we&apos;ll send you a link to reset
+                  your password
                 </p>
               </div>
 
               {/* Success Message */}
               {isSubmitted ? (
-                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                <div className="mb-6 rounded-md border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        className="h-5 w-5 text-green-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path
                           fillRule="evenodd"
                           d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -81,7 +88,10 @@ export default function ForgotPasswordClient() {
                 /* Form */
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      htmlFor="email"
+                      className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       Email Address
                     </label>
                     <input
@@ -91,14 +101,14 @@ export default function ForgotPasswordClient() {
                       required
                       value={email}
                       onChange={handleEmailChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder="john.doe@company.com"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
+                    className="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
                     Send Reset Link
                   </button>
@@ -106,10 +116,14 @@ export default function ForgotPasswordClient() {
               )}
 
               {/* Additional Info */}
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+              <div className="mt-6 rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="h-5 w-5 text-blue-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -119,15 +133,15 @@ export default function ForgotPasswordClient() {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      If you don't receive an email within a few minutes, please contact the IT department for
-                      assistance.
+                      If you don&apos;t receive an email within a few minutes, please
+                      contact the IT department for assistance.
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Navigation Links */}
-              <div className="mt-6 text-center space-y-2">
+              <div className="mt-6 space-y-2 text-center">
                 <div>
                   <Link
                     href="/auth/sign-in"
@@ -140,13 +154,16 @@ export default function ForgotPasswordClient() {
             </div>
 
             {/* Right Side - Simple Branding */}
-            <div className="hidden lg:block lg:w-1/2 bg-gray-50 dark:bg-gray-700">
-              <div className="h-full flex flex-col justify-center items-center p-12">
+            <div className="hidden bg-gray-50 dark:bg-gray-700 lg:block lg:w-1/2">
+              <div className="flex h-full flex-col items-center justify-center p-12">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Password Recovery</h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-8">We'll help you get back into your account</p>
-
-                  <div className="w-64 h-64 mx-auto">
+                  <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+                    Password Recovery
+                  </h2>
+                  <p className="mb-8 text-gray-600 dark:text-gray-300">
+                    We&apos;ll help you get back into your account
+                  </p>
+                  <div className="mx-auto h-64 w-64">
                     <Image
                       src="/images/grids/grid-02.svg"
                       alt="Company Illustration"
@@ -158,22 +175,24 @@ export default function ForgotPasswordClient() {
 
                   {/* Steps */}
                   <div className="mt-8 text-left">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">How it works:</h3>
+                    <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+                      How it works:
+                    </h3>
                     <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-semibold mr-3">
+                        <span className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
                           1
                         </span>
                         Enter your email address
                       </div>
                       <div className="flex items-center">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-semibold mr-3">
+                        <span className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
                           2
                         </span>
                         Check your email for reset link
                       </div>
                       <div className="flex items-center">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-semibold mr-3">
+                        <span className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
                           3
                         </span>
                         Create a new password
@@ -188,9 +207,11 @@ export default function ForgotPasswordClient() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">For technical support, contact IT department</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            For technical support, contact IT department
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

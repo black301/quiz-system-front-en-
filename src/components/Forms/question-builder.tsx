@@ -154,7 +154,7 @@ export function QuestionBuilder({
         {questions.length === 0 ? (
           <div className="py-8 text-center">
             <p className="text-body-color dark:text-dark-6">
-              No questions added yet. Click "Add Question" to get started.
+              No questions added yet. Click &quot;Add Question&quot; to get started.
             </p>
           </div>
         ) : (

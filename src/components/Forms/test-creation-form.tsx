@@ -152,7 +152,7 @@ export function TestCreationForm() {
           </div>
           <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">Quiz Created Successfully!</h3>
           <p className="text-center text-body-color dark:text-dark-6">
-            Your quiz "{testData.title}" has been created and is ready for students.
+            Your quiz &quot;{testData.title}&quot; has been created and is ready for students.
           </p>
         </div>
       </div>

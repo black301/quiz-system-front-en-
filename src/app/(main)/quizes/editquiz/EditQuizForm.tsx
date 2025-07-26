@@ -1,141 +1,145 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { QuestionBuilder } from "@/components/Forms/question-builder"
-import { apiFetch } from "@/lib/api"
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
+import { QuestionBuilder } from "@/components/Forms/question-builder";
+import { apiFetch } from "@/lib/api";
 
 interface TestData {
-  title: string
-  duration: string
-  startDateTime: string
-  endDateTime: string
-  weekNumber: string
+  title: string;
+  duration: string;
+  startDateTime: string;
+  endDateTime: string;
+  weekNumber: string;
 }
 
 interface Question {
-  id: string
-  type: "multiple-choice" | "essay" | "true-false" | "short-answer"
-  question: string
-  points: number
-  options?: string[]
-  correctAnswer?: string | number
-  explanation?: string
+  id: string;
+  type: "multiple-choice" | "essay" | "true-false" | "short-answer";
+  question: string;
+  points: number;
+  options?: string[];
+  correctAnswer?: string | number;
+  explanation?: string;
 }
 
 interface EditQuizFormProps {
-  quizId: number
-  onBack: () => void
+  quizId: number;
+  onBack: () => void;
 }
 
-type FormStep = "test-details" | "questions"
+type FormStep = "test-details" | "questions";
 
 export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
-  const [currentStep, setCurrentStep] = useState<FormStep>("test-details")
+  const [currentStep, setCurrentStep] = useState<FormStep>("test-details");
   const [testData, setTestData] = useState<TestData>({
     title: "",
     duration: "",
     startDateTime: "",
     endDateTime: "",
     weekNumber: "",
-  })
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
-
-  // Fetch existing quiz data on mount
-  useEffect(() => {
-    fetchQuizData()
-  }, [quizId])
-
-  const fetchQuizData = async () => {
+  });
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const fetchQuizData = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setSubmitError(null)
+      setIsLoading(true);
+      setSubmitError(null);
 
-      // Fetch quiz details with questions
-      const quizData = await apiFetch(`/quiz/${quizId}/`)
+      const quizData = await apiFetch(`/quiz/${quizId}/`);
 
-      // Populate form with existing data
       setTestData({
         title: quizData.title,
         duration: quizData.duration.toString(),
         startDateTime: formatDateForInput(quizData.start_date),
         endDateTime: formatDateForInput(quizData.end_date),
         weekNumber: quizData.week_number.toString(),
-      })
+      });
 
-      // Transform questions to match our interface
-      const transformedQuestions = quizData.questions.map((q: any, index: number) => ({
-        id: q.id.toString(),
-        type: q.question_type as "multiple-choice" | "essay" | "true-false" | "short-answer",
-        question: q.question_text,
-        points: q.points,
-        options: q.options || [],
-        correctAnswer: q.correct_answer,
-        explanation: q.explanation,
-      }))
+      const transformedQuestions = quizData.questions.map(
+        (q: any): Question => ({
+          id: q.id.toString(),
+          type: q.question_type,
+          question: q.question_text,
+          points: q.points,
+          options: q.options || [],
+          correctAnswer: q.correct_answer,
+          explanation: q.explanation,
+        }),
+      );
 
-      setQuestions(transformedQuestions)
+      setQuestions(transformedQuestions);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Failed to fetch quiz data")
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to fetch quiz data",
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  }, [quizId]);
+
+  useEffect(() => {
+    fetchQuizData();
+  }, [fetchQuizData]);
 
   const formatDateForInput = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toISOString().slice(0, 16)
-  }
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 16);
+  };
 
   const handleTestDataSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Test data saved:", testData)
-    setCurrentStep("questions")
-  }
+    e.preventDefault();
+    console.log("Test data saved:", testData);
+    setCurrentStep("questions");
+  };
 
   const handleInputChange = (field: keyof TestData, value: string) => {
     setTestData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  };
 
   const handleAddQuestion = (question: Question) => {
-    setQuestions((prev) => [...prev, question])
-  }
+    setQuestions((prev) => [...prev, question]);
+  };
 
-  const handleEditQuestion = (questionId: string, updatedQuestion: Question) => {
-    setQuestions((prev) => prev.map((q) => (q.id === questionId ? updatedQuestion : q)))
-  }
+  const handleEditQuestion = (
+    questionId: string,
+    updatedQuestion: Question,
+  ) => {
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === questionId ? updatedQuestion : q)),
+    );
+  };
 
   const handleDeleteQuestion = (questionId: string) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId))
-  }
+    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+  };
 
   const updateQuiz = async (quizData: any) => {
     try {
       const response = await apiFetch(`/instructor/quizzes/${quizId}/edit/`, {
         method: "PATCH",
         body: JSON.stringify(quizData),
-      })
-      return response
+      });
+      return response;
     } catch (error) {
-      throw error
+      throw error;
     }
-  }
+  };
 
   const handleFinalSubmit = async () => {
     if (questions.length === 0) {
-      setSubmitError("Please add at least one question to the quiz.")
-      return
+      setSubmitError("Please add at least one question to the quiz.");
+      return;
     }
 
-    setIsSubmitting(true)
-    setSubmitError(null)
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       // Transform the data to match API format
@@ -146,28 +150,32 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
         end_date: new Date(testData.endDateTime).toISOString(),
         duration: Number.parseInt(testData.duration),
         total_points: questions.reduce((sum, q) => sum + q.points, 0),
-      }
+      };
 
-      console.log("Updating quiz data:", quizData)
-      const response = await updateQuiz(quizData)
+      console.log("Updating quiz data:", quizData);
+      const response = await updateQuiz(quizData);
 
       // Handle questions separately
-      await updateQuestions()
+      await updateQuestions();
 
-      console.log("Quiz updated successfully:", response)
-      setSubmitSuccess(true)
+      console.log("Quiz updated successfully:", response);
+      setSubmitSuccess(true);
 
       // Go back after successful submission
       setTimeout(() => {
-        onBack()
-      }, 2000)
+        onBack();
+      }, 2000);
     } catch (error) {
-      console.error("Error updating quiz:", error)
-      setSubmitError(error instanceof Error ? error.message : "Failed to update quiz. Please try again.")
+      console.error("Error updating quiz:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update quiz. Please try again.",
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const updateQuestions = async () => {
     // This is a simplified approach - in a real app, you'd want to:
@@ -186,41 +194,43 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
           correct_answer: question.correctAnswer || null,
           options: question.options,
           explanation: question.explanation,
-        }
+        };
 
         await apiFetch(`/instructor/quizzes/${quizId}/questions/`, {
           method: "POST",
           body: JSON.stringify(questionData),
-        })
+        });
       } else {
         // This is an existing question - update it
         const questionData = {
           question_text: question.question,
           points: question.points,
-        }
+        };
 
         await apiFetch(`/instructor/questions/${question.id}/edit/`, {
           method: "PATCH",
           body: JSON.stringify(questionData),
-        })
+        });
       }
     }
-  }
+  };
 
   const handleBackToTestDetails = () => {
-    setCurrentStep("test-details")
-  }
+    setCurrentStep("test-details");
+  };
 
   // Loading state
   if (isLoading) {
     return (
       <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-3 text-body-color dark:text-dark-6">Loading quiz data...</span>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          <span className="text-body-color ml-3 dark:text-dark-6">
+            Loading quiz data...
+          </span>
         </div>
       </div>
-    )
+    );
   }
 
   // Success message component
@@ -235,16 +245,24 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
-          <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">Quiz Updated Successfully!</h3>
-          <p className="text-center text-body-color dark:text-dark-6">
-            Your quiz "{testData.title}" has been updated successfully.
+          <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">
+            Quiz Updated Successfully!
+          </h3>
+          <p className="text-body-color text-center dark:text-dark-6">
+            Your quiz &quot;{testData.title}&quot; has been updated
+            successfully.
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (currentStep === "questions") {
@@ -263,10 +281,10 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
 
         {/* Error Message */}
         {submitError && (
-          <div className="mt-4 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+          <div className="mt-4 rounded-[7px] border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
             <div className="flex items-center">
               <svg
-                className="h-5 w-5 text-red-600 dark:text-red-400 mr-2"
+                className="mr-2 h-5 w-5 text-red-600 dark:text-red-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -285,37 +303,56 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
 
         {/* Loading Overlay */}
         {isSubmitting && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span className="text-dark dark:text-white">Updating quiz...</span>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="flex items-center space-x-3 rounded-lg bg-white p-6 dark:bg-gray-dark">
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+              <span className="text-dark dark:text-white">
+                Updating quiz...
+              </span>
             </div>
           </div>
         )}
       </div>
-    )
+    );
   }
 
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
       {/* Header with Back Button */}
       <div className="mb-7.5">
-        <button onClick={onBack} className="mb-3 flex items-center text-primary hover:text-primary/80">
-          <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <button
+          onClick={onBack}
+          className="mb-3 flex items-center text-primary hover:text-primary/80"
+        >
+          <svg
+            className="mr-2 h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back to Quiz List
         </button>
-        <h3 className="text-2xl font-bold text-dark dark:text-white">Edit Quiz</h3>
-        <p className="text-body-color dark:text-dark-6">Update the quiz details below</p>
+        <h3 className="text-2xl font-bold text-dark dark:text-white">
+          Edit Quiz
+        </h3>
+        <p className="text-body-color dark:text-dark-6">
+          Update the quiz details below
+        </p>
       </div>
 
       {/* Error Message */}
       {submitError && (
-        <div className="mb-4 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+        <div className="mb-4 rounded-[7px] border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
           <div className="flex items-center">
             <svg
-              className="h-5 w-5 text-red-600 dark:text-red-400 mr-2"
+              className="mr-2 h-5 w-5 text-red-600 dark:text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -391,7 +428,9 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
             <input
               type="datetime-local"
               value={testData.startDateTime}
-              onChange={(e) => handleInputChange("startDateTime", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("startDateTime", e.target.value)
+              }
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
@@ -420,5 +459,5 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
         </button>
       </form>
     </div>
-  )
+  );
 }

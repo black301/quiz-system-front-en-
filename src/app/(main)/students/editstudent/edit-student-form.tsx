@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { apiFetch } from "@/lib/api"
+import { useState, useEffect, useCallback } from "react";
+import { apiFetch } from "@/lib/api";
 
 interface EditStudentFormProps {
-  studentId: number
-  onBack: () => void
+  studentId: number;
+  onBack: () => void;
 }
 
 interface StudentFormData {
-  name: string
-  email: string
-  password: string
-  level: number
+  name: string;
+  email: string;
+  password: string;
+  level: number;
 }
 
 export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
@@ -23,26 +23,18 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
     email: "",
     password: "",
     level: 1,
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-
-  // Fetch existing student data
-  useEffect(() => {
-    fetchStudentData()
-  }, [studentId])
-
-  const fetchStudentData = async () => {
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const fetchStudentData = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      // Since there's no specific GET endpoint for a single student,
-      // we'll fetch all students and find the one we need
-      const students = await apiFetch("/instructor/students/")
-      const student = students.find((s: any) => s.id === studentId)
+      const students = await apiFetch("/instructor/students/");
+      const student = students.find((s: any) => s.id === studentId);
 
       if (student) {
         setFormData({
@@ -50,28 +42,38 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
           email: student.email,
           password: "", // Don't pre-fill password for security
           level: student.level,
-        })
+        });
       } else {
-        setError("Student not found")
+        setError("Student not found");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch student data")
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch student data",
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  }, [studentId]); // only re-create if studentId changes
 
-  const handleInputChange = (field: keyof StudentFormData, value: string | number) => {
+  // Fetch existing student data
+  useEffect(() => {
+    fetchStudentData();
+  }, [studentId, fetchStudentData]);
+
+  const handleInputChange = (
+    field: keyof StudentFormData,
+    value: string | number,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
 
     try {
       // Only include fields that have values (don't send empty password)
@@ -79,57 +81,66 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
         name: formData.name,
         email: formData.email,
         level: formData.level,
-      }
+      };
 
       // Only include password if it's been changed
       if (formData.password.trim()) {
-        updateData.password = formData.password
+        updateData.password = formData.password;
       }
 
-      const response = await apiFetch(`/instructor/students/${studentId}/update/`, {
-        method: "PATCH",
-        body: JSON.stringify(updateData),
-      })
+      const response = await apiFetch(
+        `/instructor/students/${studentId}/update/`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(updateData),
+        },
+      );
 
-      console.log("Student updated successfully:", response)
-      setSuccess(true)
+      console.log("Student updated successfully:", response);
+      setSuccess(true);
 
       // Go back after successful update
       setTimeout(() => {
-        onBack()
-      }, 2000)
+        onBack();
+      }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update student. Please try again.")
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to update student. Please try again.",
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const getLevelName = (level: number) => {
     switch (level) {
       case 1:
-        return "Beginner"
+        return "Beginner";
       case 2:
-        return "Intermediate"
+        return "Intermediate";
       case 3:
-        return "Advanced"
+        return "Advanced";
       case 4:
-        return "Expert"
+        return "Expert";
       default:
-        return "Unknown"
+        return "Unknown";
     }
-  }
+  };
 
   // Loading state
   if (isLoading) {
     return (
       <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-3 text-body-color dark:text-dark-6">Loading student data...</span>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          <span className="text-body-color ml-3 dark:text-dark-6">
+            Loading student data...
+          </span>
         </div>
       </div>
-    )
+    );
   }
 
   // Success message component
@@ -144,38 +155,62 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
-          <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">Student Updated Successfully!</h3>
-          <p className="text-center text-body-color dark:text-dark-6">
-            Student "{formData.name}" has been updated successfully.
+          <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">
+            Student Updated Successfully!
+          </h3>
+          <p className="text-body-color text-center dark:text-dark-6">
+            Student &quot;{formData.name}&quot; has been updated successfully.
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
       {/* Header */}
       <div className="mb-7.5">
-        <button onClick={onBack} className="mb-3 flex items-center text-primary hover:text-primary/80">
-          <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <button
+          onClick={onBack}
+          className="mb-3 flex items-center text-primary hover:text-primary/80"
+        >
+          <svg
+            className="mr-2 h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back to Student Details
         </button>
-        <h3 className="text-2xl font-bold text-dark dark:text-white">Edit Student</h3>
-        <p className="text-body-color dark:text-dark-6">Update student information</p>
+        <h3 className="text-2xl font-bold text-dark dark:text-white">
+          Edit Student
+        </h3>
+        <p className="text-body-color dark:text-dark-6">
+          Update student information
+        </p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+        <div className="mb-4 rounded-[7px] border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
           <div className="flex items-center">
             <svg
-              className="h-5 w-5 text-red-600 dark:text-red-400 mr-2"
+              className="mr-2 h-5 w-5 text-red-600 dark:text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -227,7 +262,10 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
         <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
           <div className="w-full xl:w-1/2">
             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              New Password <span className="text-body-color dark:text-dark-6">(Leave blank to keep current)</span>
+              New Password{" "}
+              <span className="text-body-color dark:text-dark-6">
+                (Leave blank to keep current)
+              </span>
             </label>
             <input
               type="password"
@@ -244,7 +282,9 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
             </label>
             <select
               value={formData.level}
-              onChange={(e) => handleInputChange("level", Number.parseInt(e.target.value))}
+              onChange={(e) =>
+                handleInputChange("level", Number.parseInt(e.target.value))
+              }
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             >
@@ -261,11 +301,15 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
           <h4 className="mb-2 text-sm font-medium text-dark dark:text-white">
             Selected Level: {getLevelName(formData.level)}
           </h4>
-          <p className="text-xs text-body-color dark:text-dark-6">
-            {formData.level === 1 && "Suitable for students who are new to the subject matter."}
-            {formData.level === 2 && "For students with basic understanding and some experience."}
-            {formData.level === 3 && "For students with solid foundation and good comprehension."}
-            {formData.level === 4 && "For students with extensive knowledge and expertise."}
+          <p className="text-body-color text-xs dark:text-dark-6">
+            {formData.level === 1 &&
+              "Suitable for students who are new to the subject matter."}
+            {formData.level === 2 &&
+              "For students with basic understanding and some experience."}
+            {formData.level === 3 &&
+              "For students with solid foundation and good comprehension."}
+            {formData.level === 4 &&
+              "For students with extensive knowledge and expertise."}
           </p>
         </div>
 
@@ -281,13 +325,15 @@ export function EditStudentForm({ studentId, onBack }: EditStudentFormProps) {
 
       {/* Loading Overlay */}
       {isSubmitting && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-dark rounded-lg p-6 flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="text-dark dark:text-white">Updating student...</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="flex items-center space-x-3 rounded-lg bg-white p-6 dark:bg-gray-dark">
+            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+            <span className="text-dark dark:text-white">
+              Updating student...
+            </span>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

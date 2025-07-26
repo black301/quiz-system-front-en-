@@ -202,7 +202,7 @@ export default function CourseManagementPage() {
               </svg>
               <h3 className="mt-4 text-lg font-medium text-dark dark:text-white">No students enrolled</h3>
               <p className="mt-2 text-body-color dark:text-dark-6">
-                This course doesn't have any students enrolled yet.
+                This course doesn&apos;t have any students enrolled yet.
               </p>
             </div>
           ) : (
@@ -300,7 +300,7 @@ export default function CourseManagementPage() {
             />
           </svg>
           <h3 className="mt-4 text-lg font-medium text-dark dark:text-white">No courses found</h3>
-          <p className="mt-2 text-body-color dark:text-dark-6">You don't have any courses assigned yet.</p>
+          <p className="mt-2 text-body-color dark:text-dark-6">You don&apos;t have any courses assigned yet.</p>
         </div>
       ) : (
         /* Courses Grid */

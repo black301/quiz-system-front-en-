@@ -56,7 +56,7 @@ export async function getChatsData() {
       profile: "/images/user/user-04.png",
       isActive: false,
       lastMessage: {
-        content: "What's up?",
+        content: "Whats up?",
         type: "text",
         timestamp: "2024-12-19T10:15:00Z",
         isRead: true,
