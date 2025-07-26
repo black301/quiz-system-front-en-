@@ -326,28 +326,6 @@ const CalendarBox = () => {
                           {day.events.length} quiz
                           {day.events.length > 1 ? "es" : ""}
                         </span>
-                        <div className="max-h-20 space-y-1 overflow-y-auto">
-                          {day.events.map((event, index) => (
-                            <div
-                              key={event.id}
-                              className={
-                                index > 0
-                                  ? "border-t border-stroke pt-1 dark:border-dark-3"
-                                  : ""
-                              }
-                            >
-                              <span className="block text-sm font-semibold leading-snug text-dark dark:text-white">
-                                📝 {event.title}
-                              </span>
-                              <span className="text-body-color text-xs leading-tight dark:text-dark-6">
-                                {formatEventDate(
-                                  event.startDate,
-                                  event.endDate,
-                                )}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     )}
                   </td>
@@ -363,19 +341,12 @@ const CalendarBox = () => {
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-primary"></div>
             <span className="text-body-color text-sm dark:text-dark-6">
-              Quiz
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-primary"></div>
-            <span className="text-body-color text-sm dark:text-dark-6">
-              Today
+              <span className="text-body-color text-sm dark:text-dark-6">
+                {events.length} quiz{events.length !== 1 ? "es" : ""} this month
+              </span>
             </span>
           </div>
         </div>
-        <span className="text-body-color text-sm dark:text-dark-6">
-          {events.length} quiz{events.length !== 1 ? "es" : ""} this month
-        </span>
       </div>
     </div>
   );

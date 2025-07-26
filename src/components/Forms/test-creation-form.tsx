@@ -8,8 +8,8 @@ import { apiFetch } from "@/lib/api"
 interface TestData {
   title: string
   duration: string
-  startDateTime: string
-  endDateTime: string
+  startDate: string
+  startTime: string
   weekNumber: string
 }
 
@@ -30,8 +30,8 @@ export function TestCreationForm() {
   const [testData, setTestData] = useState<TestData>({
     title: "",
     duration: "",
-    startDateTime: "",
-    endDateTime: "",
+    startDate: "",
+    startTime: "",
     weekNumber: "",
   })
   const [questions, setQuestions] = useState<Question[]>([])
@@ -39,8 +39,35 @@ export function TestCreationForm() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
+  const validateStartTime = (time: string): boolean => {
+    if (!time) return false
+    const [hours] = time.split(":").map(Number)
+    return hours >= 9 && hours <= 17 // 9 AM to 5 PM
+  }
+
+  const calculateEndDateTime = (startDate: string, startTime: string, durationMinutes: number): string => {
+    const startDateTime = new Date(`${startDate}T${startTime}`)
+    const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60000)
+    return endDateTime.toISOString()
+  }
+
   const handleTestDataSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate start time
+    if (!validateStartTime(testData.startTime)) {
+      setSubmitError("Start time must be between 9:00 AM and 5:00 PM")
+      return
+    }
+
+    // Validate duration
+    const duration = Number.parseInt(testData.duration)
+    if (duration > 120) {
+      setSubmitError("Duration cannot exceed 120 minutes")
+      return
+    }
+
+    setSubmitError(null)
     console.log("Test data saved:", testData)
     setCurrentStep("questions")
   }
@@ -69,7 +96,7 @@ export function TestCreationForm() {
       const response = await apiFetch("/instructor/quizzes/", {
         method: "POST",
         body: JSON.stringify(quizData),
-      })  
+      })
       return response
     } catch (error) {
       throw error
@@ -86,13 +113,18 @@ export function TestCreationForm() {
     setSubmitError(null)
 
     try {
+      // Calculate start and end date times
+      const startDateTime = new Date(`${testData.startDate}T${testData.startTime}`)
+      const durationMinutes = Number.parseInt(testData.duration)
+      const endDateTime = calculateEndDateTime(testData.startDate, testData.startTime, durationMinutes)
+
       // Transform the data to match API format
       const quizData = {
         title: testData.title,
         week_number: Number.parseInt(testData.weekNumber),
-        start_date: new Date(testData.startDateTime).toISOString(),
-        end_date: new Date(testData.endDateTime).toISOString(),
-        duration: Number.parseInt(testData.duration),
+        start_date: startDateTime.toISOString(),
+        end_date: endDateTime,
+        duration: durationMinutes,
         total_points: questions.reduce((sum, q) => sum + q.points, 0),
         questions: questions.map((q) => ({
           question_text: q.question,
@@ -106,7 +138,6 @@ export function TestCreationForm() {
 
       console.log("Submitting quiz data:", quizData)
       const response = await createQuiz(quizData)
-
       console.log("Quiz created successfully:", response)
       setSubmitSuccess(true)
 
@@ -115,8 +146,8 @@ export function TestCreationForm() {
         setTestData({
           title: "",
           duration: "",
-          startDateTime: "",
-          endDateTime: "",
+          startDate: "",
+          startTime: "",
           weekNumber: "",
         })
         setQuestions([])
@@ -171,7 +202,6 @@ export function TestCreationForm() {
           onFinalSubmit={handleFinalSubmit}
           onBackToTestDetails={handleBackToTestDetails}
         />
-
         {/* Error Message */}
         {submitError && (
           <div className="mt-4 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
@@ -193,7 +223,6 @@ export function TestCreationForm() {
             </div>
           </div>
         )}
-
         {/* Loading Overlay */}
         {isSubmitting && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -246,9 +275,11 @@ export function TestCreationForm() {
               value={testData.duration}
               onChange={(e) => handleInputChange("duration", e.target.value)}
               min="1"
+              max="120"
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
+            <p className="mt-1 text-xs text-body-color dark:text-dark-6">Maximum 120 minutes</p>
           </div>
           <div className="w-full xl:w-1/2">
             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
@@ -270,30 +301,52 @@ export function TestCreationForm() {
         <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
           <div className="w-full xl:w-1/2">
             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              Start Date & Time <span className="text-red">*</span>
+              Start Date <span className="text-red">*</span>
             </label>
             <input
-              type="datetime-local"
-              value={testData.startDateTime}
-              onChange={(e) => handleInputChange("startDateTime", e.target.value)}
+              type="date"
+              value={testData.startDate}
+              onChange={(e) => handleInputChange("startDate", e.target.value)}
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
           </div>
           <div className="w-full xl:w-1/2">
             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              End Date & Time <span className="text-red">*</span>
+              Start Time <span className="text-red">*</span>
             </label>
             <input
-              type="datetime-local"
-              value={testData.endDateTime}
-              onChange={(e) => handleInputChange("endDateTime", e.target.value)}
+              type="time"
+              value={testData.startTime}
+              onChange={(e) => handleInputChange("startTime", e.target.value)}
               required
-              min={testData.startDateTime}
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
+            <p className="mt-1 text-xs text-body-color dark:text-dark-6">Must be between 9:00 AM and 5:00 PM</p>
           </div>
         </div>
+
+        {/* Error Message */}
+        {submitError && (
+          <div className="mb-4.5 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+            <div className="flex items-center">
+              <svg
+                className="h-5 w-5 text-red-600 dark:text-red-400 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p className="text-red-800 dark:text-red-200">{submitError}</p>
+            </div>
+          </div>
+        )}
 
         {/* Submit Button */}
         <button
