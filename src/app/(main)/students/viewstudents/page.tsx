@@ -32,7 +32,7 @@ export default function StudentManagementPage() {
     try {
       setIsLoadingStudents(true);
       setError(null);
-      const data = await apiFetch("/instructor/students/");
+      const data = await apiFetch("/instructor/students/all");
       setStudents(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch students");
