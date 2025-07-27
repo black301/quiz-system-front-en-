@@ -1,4 +1,5 @@
 ```markdown
+
 # ⚡ Next.js Admin Dashboard
 
 A modern, responsive Admin Dashboard built with **Next.js 14+**, **Tailwind CSS**, and **App Router**. This dashboard includes theme toggling, authentication, a responsive sidebar, and dropdown menus.
@@ -111,7 +112,7 @@ npm start
 
 Make sure to add a `.env.local` file for your API endpoints and secrets:
 
-```env
+```bash
 NEXT_PUBLIC_API_BASE=https://your-backend.com/api
 ```
 
