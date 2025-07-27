@@ -22,6 +22,11 @@ export const NAV_DATA = [
         url: "/courses",
         items: [],
       }, 
+      { title: "Submissions",
+        icon: Icons.PieChart,
+        url: "/grading/quiz-grading-management-page",
+        items: []
+      },
       {
         title: "Student management",
         icon: Icons.User,
@@ -29,8 +34,8 @@ export const NAV_DATA = [
         items: [],
       }, 
       { title: "Quizes",
-        url: "/quizes",
         icon: Icons.Authentication,
+        url: "/quizes",
         items: [
           {
             title: "View Quizes",
@@ -42,6 +47,7 @@ export const NAV_DATA = [
           },
         ]
       },
+      
     ],
   },
 ];
