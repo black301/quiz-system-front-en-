@@ -30,13 +30,25 @@ export default function SigninWithPassword() {
     setError("");
 
     try {
-      const result = await apiFetch("/auth/login/", {
-        method: "POST",
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api"}/auth/instructor-login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+          }),
+        },
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.detail || "Invalid credentials.");
+      }
 
       // Set access token in cookie
       const maxAge = data.remember ? 60 * 60 * 24 * 7 : 60 * 60 * 2; // 7d or 2h
@@ -60,7 +72,7 @@ export default function SigninWithPassword() {
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <div className="mb-4 text-sm text-red-600 bg-red-100 p-2 rounded">
+        <div className="mb-4 rounded bg-red-100 p-2 text-sm text-red-600">
           {error}
         </div>
       )}
@@ -73,7 +85,7 @@ export default function SigninWithPassword() {
         name="email"
         handleChange={handleChange}
         value={data.email}
-        icon={<EmailIcon/>}
+        icon={<EmailIcon />}
       />
 
       <InputGroup

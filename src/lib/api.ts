@@ -6,16 +6,31 @@ function getAccessToken() {
   return localStorage.getItem("access");
 }
 
-function logoutUser() {
-  // Clear all auth data
+async function logoutUser(){
+  const refresh = localStorage.getItem("refresh");
+
+  if (refresh) {
+    try {
+      await fetch(`${BASE_URL}/auth/logout/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh }),
+      });
+    } catch (error) {
+      console.warn("Failed to logout from backend:", error);
+      // Optional: you can ignore errors here — user will still be logged out client-side
+    }
+  }
+
+  // Clear all client-side auth data
   document.cookie = "access=; path=/; max-age=0; SameSite=Lax";
   localStorage.removeItem("access");
   localStorage.removeItem("refresh");
   localStorage.removeItem("user");
-
-  // Redirect to login
-  window.location.href = "/auth/signin";
 }
+
 
 async function refreshToken() {
   const refresh = localStorage.getItem("refresh");
@@ -80,6 +95,8 @@ export async function apiFetch(
       } catch (error) {
         // Refresh failed: logout user
         logoutUser();
+
+
         throw new Error("Session expired. Please sign in again.");
       }
     }
