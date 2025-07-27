@@ -1,6 +1,5 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { deleteCookie } from "cookies-next";
 import { ChevronUpIcon } from "@/assets/icons";
 import {
   Dropdown,
@@ -15,18 +14,14 @@ import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState({ name: "", email: "" });
-   const router = useRouter();
-const handleLogout = () => {
-  // Remove cookie by setting max-age=0 and path=/ to match how it was set
-  document.cookie = "access=; path=/; max-age=0; SameSite=Lax";
+  const router = useRouter();
 
-  // Clear localStorage
-  localStorage.removeItem("refresh");
-  localStorage.removeItem("user");
-
-  // Reload the page to force middleware to re-run
-  window.location.href = "/auth/sign-in";
-};
+  const handleLogout = () => {
+    document.cookie = "access=; path=/; max-age=0; SameSite=Lax";
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
+    window.location.href = "/auth/sign-in";
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -49,8 +44,14 @@ const handleLogout = () => {
         <span className="sr-only">My Account</span>
 
         <figure className="flex items-center gap-3">
-          <figcaption className="flex items-center gap-1 font-medium text-dark dark:text-dark-6 max-[1024px]:sr-only">
-            <UserIcon/>
+          {/* Minimal view on small screens */}
+          <span className="text-dark dark:text-white sm:hidden">
+            <UserIcon />
+          </span>
+
+          {/* Full info for larger screens */}
+          <figcaption className="hidden items-center gap-1 font-medium text-dark dark:text-dark-6 sm:flex">
+            <UserIcon />
             <span>{user.name}</span>
             <ChevronUpIcon
               aria-hidden
@@ -65,17 +66,22 @@ const handleLogout = () => {
       </DropdownTrigger>
 
       <DropdownContent
-        className="border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark min-[230px]:min-w-[17.5rem]"
+        className="w-full max-w-xs border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark sm:min-w-[17.5rem]"
         align="end"
       >
         <h2 className="sr-only">User information</h2>
 
         <div className="px-5 py-3.5">
-          <div className="space-y-1 text-base font-medium">
-            <div className="mb-2 leading-none text-dark dark:text-white">
+          <div className="max-w-full space-y-1 overflow-hidden text-base font-medium">
+            <div className="mb-1 break-words leading-none text-dark dark:text-white">
               {user.name}
             </div>
-            <div className="leading-none text-gray-6">{user.email}</div>
+            <div
+              className="overflow-hidden text-ellipsis break-all text-sm leading-tight text-gray-6"
+              style={{ maxWidth: "100%" }}
+            >
+              {user.email}
+            </div>
           </div>
         </div>
 
@@ -85,10 +91,10 @@ const handleLogout = () => {
           <Link
             href={"/pages/settings"}
             onClick={() => setIsOpen(false)}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-3 hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
           >
             <SettingsIcon />
-            <span className="mr-auto text-base font-medium">
+            <span className="mr-auto text-left text-base font-medium">
               Account Settings
             </span>
           </Link>
@@ -98,14 +104,14 @@ const handleLogout = () => {
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6">
           <button
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-3 hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
             onClick={() => {
               setIsOpen(false);
               handleLogout();
             }}
           >
             <LogOutIcon />
-            <span className="text-base font-medium">Log out</span>
+            <span className="text-left text-base font-medium">Log out</span>
           </button>
         </div>
       </DropdownContent>
