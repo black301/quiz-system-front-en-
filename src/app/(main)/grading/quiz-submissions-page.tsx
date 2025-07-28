@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { GradeSubmissionPage } from "./grade-submission-page";
 
@@ -45,11 +45,7 @@ export function QuizSubmissionsPage({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchQuizAndSubmissions();
-  }, [quizId]);
-
-  const fetchQuizAndSubmissions = async () => {
+  const fetchQuizAndSubmissions = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -69,7 +65,10 @@ export function QuizSubmissionsPage({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [quizId]);
+  useEffect(() => {
+    fetchQuizAndSubmissions();
+  }, [fetchQuizAndSubmissions]);
 
   const handleGradeSubmission = (submission: Submission) => {
     setSelectedSubmission(submission);
@@ -359,7 +358,7 @@ export function QuizSubmissionsPage({
               No submissions yet
             </h3>
             <p className="text-body-color mt-2 dark:text-dark-6">
-              Students haven't submitted this quiz yet.
+              <p>Students haven&apos;t submitted this quiz yet.</p>
             </p>
           </div>
         ) : (
