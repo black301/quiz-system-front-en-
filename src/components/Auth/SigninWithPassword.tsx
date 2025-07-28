@@ -31,7 +31,7 @@ export default function SigninWithPassword() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api"}/auth/instructor-login/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/instructor-login/`,
         {
           method: "POST",
           headers: {
