@@ -5,9 +5,10 @@ import Link from "next/link";
 import React, { useState } from "react";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
-import { apiFetch } from "@/lib/api";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SigninWithPassword() {
+  const [showPassword, setShowPassword] = useState(false);
   const [data, setData] = useState({
     email: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "",
     password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "",
@@ -89,14 +90,23 @@ export default function SigninWithPassword() {
       />
 
       <InputGroup
-        type="password"
+        type={showPassword ? "text" : "password"}
         label="Password"
         className="mb-5 [&_input]:py-[15px]"
         placeholder="Enter your password"
         name="password"
         handleChange={handleChange}
         value={data.password}
-        icon={<PasswordIcon />}
+        icon={
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        }
       />
 
       <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">
