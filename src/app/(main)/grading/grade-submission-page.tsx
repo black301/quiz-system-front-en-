@@ -58,9 +58,7 @@ export function GradeSubmissionPage({
         `/instructor/submissions/${submissionId}/`,
       );
       setSubmission(submissionData);
-      const quizData = await apiFetch(
-        `/instructor/quizzes/${submissionData.quiz}/`,
-      );
+      const quizData = await apiFetch(`/quiz/${submissionData.quiz}/`);
       setQuestions(quizData.questions || []);
     } catch (err) {
       setError(

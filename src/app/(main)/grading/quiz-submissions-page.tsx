@@ -52,7 +52,7 @@ export function QuizSubmissionsPage({
 
       // Fetch quiz details and submissions in parallel
       const [quizData, submissionsData] = await Promise.all([
-        apiFetch(`/instructor/quizzes/${quizId}/`),
+        apiFetch(`/quiz/${quizId}/`),
         apiFetch(`/instructor/quizzes/${quizId}/submissions/`),
       ]);
 
@@ -358,7 +358,7 @@ export function QuizSubmissionsPage({
               No submissions yet
             </h3>
             <p className="text-body-color mt-2 dark:text-dark-6">
-              <p>Students haven&apos;t submitted this quiz yet.</p>
+              Students haven&apos;t submitted this quiz yet.
             </p>
           </div>
         ) : (

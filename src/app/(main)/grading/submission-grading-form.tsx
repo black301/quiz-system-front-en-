@@ -158,39 +158,8 @@ export function SubmissionGradingForm({
     0,
   );
   const totalPossiblePoints = questions.reduce((sum, q) => sum + q.points, 0);
-
   return (
     <div className="space-y-6">
-      {/* Overall Grade Summary */}
-      <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
-        <div className="mb-4 flex items-center justify-between">
-          <h4 className="text-lg font-semibold text-dark dark:text-white">
-            Grade Summary
-          </h4>
-          <div className="text-right">
-            <div className="text-xl font-bold text-primary">
-              {totalCurrentPoints}/{totalPossiblePoints} points
-            </div>
-            <div className="text-body-color text-sm dark:text-dark-6">
-              {totalPossiblePoints > 0
-                ? Math.round((totalCurrentPoints / totalPossiblePoints) * 100)
-                : 0}
-              %
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={handleGradeAll}
-            disabled={isSaving}
-            className="flex-1 rounded-[7px] bg-primary p-3 font-medium text-white hover:bg-opacity-90 disabled:opacity-50"
-          >
-            {isSaving ? "Saving..." : "Save All Grades"}
-          </button>
-        </div>
-      </div>
-
       {/* Questions and Answers */}
       <div className="space-y-4">
         {submission.answers.map((answer, index) => {
@@ -229,7 +198,6 @@ export function SubmissionGradingForm({
                   {question.question_text}
                 </p>
 
-                {/* Show correct answer for reference */}
                 {question.correct_answer && (
                   <div className="mb-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                     <p className="text-sm font-medium text-green-800 dark:text-green-200">
@@ -243,7 +211,6 @@ export function SubmissionGradingForm({
                   </div>
                 )}
 
-                {/* Student's Answer */}
                 <div className="mb-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
                   <p className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Student&apos;s Answer:
@@ -254,7 +221,6 @@ export function SubmissionGradingForm({
                 </div>
               </div>
 
-              {/* Grading Section */}
               <div className="border-t border-stroke pt-4 dark:border-dark-3">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
@@ -290,8 +256,6 @@ export function SubmissionGradingForm({
                     />
                   </div>
                 </div>
-
-                {/* Individual Save Button */}
                 <div className="mt-3 flex justify-end">
                   <button
                     onClick={() => handleEditSingle(answer.id)}
@@ -327,6 +291,36 @@ export function SubmissionGradingForm({
               Update Overall Feedback
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Grade Summary - Moved to Bottom */}
+      <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
+        <div className="mb-4 flex items-center justify-between">
+          <h4 className="text-lg font-semibold text-dark dark:text-white">
+            Grade Summary
+          </h4>
+          <div className="text-right">
+            <div className="text-xl font-bold text-primary">
+              {totalCurrentPoints}/{totalPossiblePoints} points
+            </div>
+            <div className="text-body-color text-sm dark:text-dark-6">
+              {totalPossiblePoints > 0
+                ? Math.round((totalCurrentPoints / totalPossiblePoints) * 100)
+                : 0}
+              %
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleGradeAll}
+            disabled={isSaving}
+            className="flex-1 rounded-[7px] bg-primary p-3 font-medium text-white hover:bg-opacity-90 disabled:opacity-50"
+          >
+            {isSaving ? "Saving..." : "Save All Grades"}
+          </button>
         </div>
       </div>
     </div>
