@@ -30,6 +30,7 @@ async function logoutUser() {
   localStorage.removeItem("access");
   localStorage.removeItem("refresh");
   localStorage.removeItem("user");
+  window.location.href = "/auth/signin"; // Change path if your sign-in route is different
 }
 
 async function refreshToken() {
