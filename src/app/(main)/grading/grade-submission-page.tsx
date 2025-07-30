@@ -7,6 +7,7 @@ import { SubmissionGradingForm } from "./submission-grading-form";
 interface Answer {
   id: number;
   question: number;
+  question_text: string;
   answer_text: string;
   points: number | null;
   feedback: string | null;
@@ -59,7 +60,8 @@ export function GradeSubmissionPage({
       );
       setSubmission(submissionData);
       const quizData = await apiFetch(`/quiz/${submissionData.quiz}/`);
-      setQuestions(quizData.questions || []);
+      setQuestions(quizData.questions);
+      // alert(quizData.questions[0].question_text);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch submission data",
@@ -345,14 +347,16 @@ export function GradeSubmissionPage({
       </div>
 
       {/* Grading Form */}
-      <SubmissionGradingForm
-        submission={submission}
-        questions={questions}
-        onGradeAllAnswers={handleGradeAllAnswers}
-        onEditSingleAnswer={handleEditSingleAnswer}
-        onEditOverallFeedback={handleEditOverallFeedback}
-        isSaving={isSaving}
-      />
+      {questions.length > 0 && (
+        <SubmissionGradingForm
+          submission={submission}
+          questions={questions}
+          onGradeAllAnswers={handleGradeAllAnswers}
+          onEditSingleAnswer={handleEditSingleAnswer}
+          onEditOverallFeedback={handleEditOverallFeedback}
+          isSaving={isSaving}
+        />
+      )}
 
       {/* Loading Overlay */}
       {isSaving && (
