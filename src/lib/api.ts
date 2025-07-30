@@ -1,4 +1,5 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
 
 function getAccessToken() {
   const match = document.cookie.match(/(^| )access=([^;]+)/);
@@ -6,7 +7,7 @@ function getAccessToken() {
   return localStorage.getItem("access");
 }
 
-async function logoutUser(){
+async function logoutUser() {
   const refresh = localStorage.getItem("refresh");
 
   if (refresh) {
@@ -16,7 +17,7 @@ async function logoutUser(){
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ refresh }),
+        body: JSON.stringify({ refresh: refresh }),
       });
     } catch (error) {
       console.warn("Failed to logout from backend:", error);
@@ -31,17 +32,16 @@ async function logoutUser(){
   localStorage.removeItem("user");
 }
 
-
 async function refreshToken() {
   const refresh = localStorage.getItem("refresh");
   if (!refresh) throw new Error("No refresh token");
 
-  const res = await fetch(`${BASE_URL}/auth/token/refresh/`, {
+  const res = await fetch(`${BASE_URL}/auth/refresh/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ refresh }),
+    body: JSON.stringify({ refresh: refresh }),
   });
 
   const data = await res.json();
@@ -58,7 +58,7 @@ async function refreshToken() {
 export async function apiFetch(
   endpoint: string,
   options: RequestInit = {},
-  retry = true
+  retry = true,
 ) {
   let token = getAccessToken();
   const url = `${BASE_URL}${endpoint}`;
@@ -95,7 +95,6 @@ export async function apiFetch(
       } catch (error) {
         // Refresh failed: logout user
         logoutUser();
-
 
         throw new Error("Session expired. Please sign in again.");
       }
