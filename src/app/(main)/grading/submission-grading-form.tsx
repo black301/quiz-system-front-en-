@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 interface Answer {
   id: number;
+  question_text: string;
   question: number;
   answer_text: string;
   points: number | null;
@@ -127,12 +128,14 @@ export function SubmissionGradingForm({
     await onEditOverallFeedback(overallFeedback);
   };
 
-  const getQuestionForAnswer = (questionId: number) => {
-    return questions.find((q) => q.id === questionId);
+  const getQuestionForAnswer = (questionText: string) => {
+    return questions.find((q) => q.question_text === questionText);
   };
 
   const isCorrectAnswer = (answer: Answer, question: Question) => {
-    if (!question.correct_answer) return null;
+    if (!question.correct_answer) {
+      return null;
+    }
 
     if (question.question_type === "multiple-choice") {
       const selectedIndex = Number.parseInt(answer.answer_text);
@@ -163,8 +166,10 @@ export function SubmissionGradingForm({
       {/* Questions and Answers */}
       <div className="space-y-4">
         {submission.answers.map((answer, index) => {
-          const question = getQuestionForAnswer(answer.question);
-          if (!question) return null;
+          const question = getQuestionForAnswer(answer.question_text);
+          if (!question) {
+            return null;
+          }
 
           const isCorrect = isCorrectAnswer(answer, question);
           const isEditing = editingAnswer === answer.id;
