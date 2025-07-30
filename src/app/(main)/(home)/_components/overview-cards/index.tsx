@@ -7,25 +7,7 @@ export async function OverviewCardsGroup() {
   const { views, profit, products, users } = await getOverviewData();
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-      <OverviewCard
-        label="Total Submissions"
-        data={{
-          ...views,
-          value: compactFormat(views.value),
-        }}
-        Icon={icons.Views}
-      />
-
-      <OverviewCard
-        label="Total Profit"
-        data={{
-          ...profit,
-          value: compactFormat(profit.value),
-        }}
-        Icon={icons.Profit}
-      />
-
+    <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:gap-7.5">
       <OverviewCard
         label="Total Quizes"
         data={{
@@ -34,7 +16,6 @@ export async function OverviewCardsGroup() {
         }}
         Icon={icons.Product}
       />
-
       <OverviewCard
         label="Total Students"
         data={{
@@ -42,6 +23,14 @@ export async function OverviewCardsGroup() {
           value: compactFormat(users.value),
         }}
         Icon={icons.Users}
+      />
+      <OverviewCard
+        label="Total Submissions"
+        data={{
+          ...views,
+          value: compactFormat(views.value),
+        }}
+        Icon={icons.Views}
       />
     </div>
   );

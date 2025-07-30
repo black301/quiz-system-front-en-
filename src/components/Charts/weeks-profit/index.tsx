@@ -1,15 +1,15 @@
 import { PeriodPicker } from "@/components/period-picker";
 import { cn } from "@/lib/utils";
-import { getWeeksProfitData } from "@/services/charts.services";
-import { WeeksProfitChart } from "./chart";
+import { getCoursesOverviewData } from "@/services/charts.services";
+import { CoursesOverviewChart } from "./chart";
 
 type PropsType = {
   timeFrame?: string;
   className?: string;
 };
-
-export async function WeeksProfit({ className, timeFrame }: PropsType) {
-  const data = await getWeeksProfitData(timeFrame);
+// courses Overview
+export async function CoursesOverview({ className, timeFrame }: PropsType) {
+  const data = await getCoursesOverviewData(timeFrame);
 
   return (
     <div
@@ -20,17 +20,17 @@ export async function WeeksProfit({ className, timeFrame }: PropsType) {
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
-          Profit {timeFrame || "this week"}
+          {timeFrame || "CS101"}
         </h2>
 
         <PeriodPicker
-          items={["this week", "last week"]}
-          defaultValue={timeFrame || "this week"}
-          sectionKey="weeks_profit"
+          items={["CS101", "IT101"]}
+          defaultValue={timeFrame || "CS101"}
+          sectionKey="Courses_Overview"
         />
       </div>
 
-      <WeeksProfitChart data={data} />
+      <CoursesOverviewChart data={data} />
     </div>
   );
 }

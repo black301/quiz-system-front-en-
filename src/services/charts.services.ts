@@ -37,7 +37,7 @@ export async function getDevicesUsedData(
   return data;
 }
 
-export async function getPaymentsOverviewData(
+export async function getQuizesOverviewData(
   timeFrame?: "monthly" | "yearly" | (string & {}),
 ) {
   // Fake delay
@@ -45,14 +45,14 @@ export async function getPaymentsOverviewData(
 
   if (timeFrame === "yearly") {
     return {
-      received: [
+      PassedStudents: [
         { x: 2020, y: 450 },
         { x: 2021, y: 620 },
         { x: 2022, y: 780 },
         { x: 2023, y: 920 },
         { x: 2024, y: 1080 },
       ],
-      due: [
+      FailedStudents: [
         { x: 2020, y: 1480 },
         { x: 2021, y: 1720 },
         { x: 2022, y: 1950 },
@@ -63,7 +63,7 @@ export async function getPaymentsOverviewData(
   }
 
   return {
-    received: [
+    PassedStudents: [
       { x: "Jan", y: 0 },
       { x: "Feb", y: 20 },
       { x: "Mar", y: 35 },
@@ -77,7 +77,7 @@ export async function getPaymentsOverviewData(
       { x: "Nov", y: 60 },
       { x: "Dec", y: 75 },
     ],
-    due: [
+    FailedStudents: [
       { x: "Jan", y: 15 },
       { x: "Feb", y: 9 },
       { x: "Mar", y: 17 },
@@ -94,11 +94,11 @@ export async function getPaymentsOverviewData(
   };
 }
 
-export async function getWeeksProfitData(timeFrame?: string) {
+export async function getCoursesOverviewData(timeFrame?: string) {
   // Fake delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  if (timeFrame === "last week") {
+  if (timeFrame === "CS101") {
     return {
       sales: [
         { x: "Sat", y: 33 },

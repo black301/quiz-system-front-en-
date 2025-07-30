@@ -14,7 +14,7 @@ const Chart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export function WeeksProfitChart({ data }: PropsType) {
+export function CoursesOverviewChart({ data }: PropsType) {
   const options: ApexOptions = {
     colors: ["#5750F1", "#0ABEF9"],
     chart: {

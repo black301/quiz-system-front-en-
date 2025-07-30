@@ -6,8 +6,8 @@ import dynamic from "next/dynamic";
 
 type PropsType = {
   data: {
-    received: { x: unknown; y: number }[];
-    due: { x: unknown; y: number }[];
+    PassedStudents: { x: unknown; y: number }[];
+    FailedStudents: { x: unknown; y: number }[];
   };
 };
 
@@ -15,7 +15,7 @@ const Chart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export function PaymentsOverviewChart({ data }: PropsType) {
+export function QuizesOverviewChart({ data }: PropsType) {
   const isMobile = useIsMobile();
 
   const options: ApexOptions = {
@@ -91,12 +91,12 @@ export function PaymentsOverviewChart({ data }: PropsType) {
         options={options}
         series={[
           {
-            name: "Received",
-            data: data.received,
+            name: "PassedStudents",
+            data: data.PassedStudents,
           },
           {
-            name: "Due",
-            data: data.due,
+            name: "FailedStudents",
+            data: data.FailedStudents,
           },
         ]}
         type="area"
