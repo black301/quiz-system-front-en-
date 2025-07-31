@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 interface Answer {
   id: number;
   question_text: string;
-  question: number;
+  question_id: number;
   answer_text: string;
   points: number | null;
   feedback: string | null;
@@ -44,11 +44,6 @@ interface SubmissionGradingFormProps {
       feedback: string;
     }>,
   ) => Promise<void>;
-  onEditSingleAnswer: (
-    answerId: number,
-    points: number,
-    feedback: string,
-  ) => Promise<void>;
   onEditOverallFeedback: (feedback: string) => Promise<void>;
   isSaving: boolean;
 }
@@ -64,7 +59,6 @@ export function SubmissionGradingForm({
   submission,
   questions,
   onGradeAllAnswers,
-  onEditSingleAnswer,
   onEditOverallFeedback,
   isSaving,
 }: SubmissionGradingFormProps) {
@@ -113,23 +107,12 @@ export function SubmissionGradingForm({
       feedback: gradingData[answer.id]?.feedback || "",
     }));
 
+    await onEditOverallFeedback(overallFeedback);
     await onGradeAllAnswers(gradedAnswers);
   };
 
-  const handleEditSingle = async (answerId: number) => {
-    const data = gradingData[answerId];
-    if (data) {
-      await onEditSingleAnswer(answerId, data.points, data.feedback);
-      setEditingAnswer(null);
-    }
-  };
-
-  const handleUpdateOverallFeedback = async () => {
-    await onEditOverallFeedback(overallFeedback);
-  };
-
-  const getQuestionForAnswer = (questionText: string) => {
-    return questions.find((q) => q.question_text === questionText);
+  const getQuestionForAnswer = (question_id: number) => {
+    return questions.find((q) => q.id === question_id);
   };
 
   const isCorrectAnswer = (answer: Answer, question: Question) => {
@@ -166,7 +149,7 @@ export function SubmissionGradingForm({
       {/* Questions and Answers */}
       <div className="space-y-4">
         {submission.answers.map((answer, index) => {
-          const question = getQuestionForAnswer(answer.question_text);
+          const question = getQuestionForAnswer(answer.question_id);
           if (!question) {
             return null;
           }
@@ -182,7 +165,7 @@ export function SubmissionGradingForm({
               <div className="mb-4">
                 <div className="mb-2 flex items-start justify-between">
                   <h5 className="font-medium text-dark dark:text-white">
-                    Question {index + 1} ({question.points} points)
+                    Question {index + 1}
                   </h5>
                   <span
                     className={`rounded px-2 py-1 text-xs font-medium ${
@@ -250,8 +233,8 @@ export function SubmissionGradingForm({
                     <label className="mb-2 block text-sm font-medium text-dark dark:text-white">
                       Feedback
                     </label>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
                       value={gradingData[answer.id]?.feedback || ""}
                       onChange={(e) =>
                         handleFeedbackChange(answer.id, e.target.value)
@@ -260,14 +243,6 @@ export function SubmissionGradingForm({
                       className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-3 py-2 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                     />
                   </div>
-                </div>
-                <div className="mt-3 flex justify-end">
-                  <button
-                    onClick={() => handleEditSingle(answer.id)}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-                  >
-                    Update This Answer
-                  </button>
                 </div>
               </div>
             </div>
@@ -288,14 +263,6 @@ export function SubmissionGradingForm({
             placeholder="Provide overall feedback for the student's performance..."
             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-3 py-2 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
           />
-          <div className="flex justify-end">
-            <button
-              onClick={handleUpdateOverallFeedback}
-              className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-            >
-              Update Overall Feedback
-            </button>
-          </div>
         </div>
       </div>
 

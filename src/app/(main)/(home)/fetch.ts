@@ -1,91 +1,17 @@
+import { apiFetch } from "@/lib/api"; // or your actual path
+
 export async function getOverviewData() {
-  // Fake delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  const data = await apiFetch("/instructor/statistics/summary/");
 
   return {
-    views: {
-      value: 300,
-      growthRate: 0.43,
+    quizzes: {
+      value: data.total_quizzes,
     },
-    profit: {
-      value: 0,
-      growthRate: 4.35,
+    students: {
+      value: data.total_students,
     },
-    products: {
-      value: 10,
-      growthRate: 2.59,
-    },
-    users: {
-      value: 4000,
-      growthRate: -0.95,
+    submissions: {
+      value: data.total_submissions,
     },
   };
-}
-
-export async function getChatsData() {
-  // Fake delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return [
-    {
-      name: "Jacob Jones",
-      profile: "/images/user/user-01.png",
-      isActive: true,
-      lastMessage: {
-        content: "See you tomorrow at the meeting!",
-        type: "text",
-        timestamp: "2024-12-19T14:30:00Z",
-        isRead: false,
-      },
-      unreadCount: 3,
-    },
-    {
-      name: "Wilium Smith",
-      profile: "/images/user/user-03.png",
-      isActive: true,
-      lastMessage: {
-        content: "Thanks for the update",
-        type: "text",
-        timestamp: "2024-12-19T10:15:00Z",
-        isRead: true,
-      },
-      unreadCount: 0,
-    },
-    {
-      name: "Johurul Haque",
-      profile: "/images/user/user-04.png",
-      isActive: false,
-      lastMessage: {
-        content: "Whats up?",
-        type: "text",
-        timestamp: "2024-12-19T10:15:00Z",
-        isRead: true,
-      },
-      unreadCount: 0,
-    },
-    {
-      name: "M. Chowdhury",
-      profile: "/images/user/user-05.png",
-      isActive: false,
-      lastMessage: {
-        content: "Where are you now?",
-        type: "text",
-        timestamp: "2024-12-19T10:15:00Z",
-        isRead: true,
-      },
-      unreadCount: 2,
-    },
-    {
-      name: "Akagami",
-      profile: "/images/user/user-07.png",
-      isActive: false,
-      lastMessage: {
-        content: "Hey, how are you?",
-        type: "text",
-        timestamp: "2024-12-19T10:15:00Z",
-        isRead: true,
-      },
-      unreadCount: 0,
-    },
-  ];
 }

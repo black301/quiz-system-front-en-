@@ -1,122 +1,139 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { QuestionBuilder } from "./question-builder"
-import { apiFetch } from "@/lib/api"
+import type React from "react";
+import { useState } from "react";
+import { QuestionBuilder } from "./question-builder";
+import { apiFetch } from "@/lib/api";
 
 interface TestData {
-  title: string
-  duration: string
-  startDate: string
-  startTime: string
-  weekNumber: string
+  title: string;
+  duration: string;
+  startDate: string;
+  startTime: string;
+  weekNumber: string;
 }
 
 interface Question {
-  id: string
-  type: "multiple-choice" | "essay" | "true-false" | "short-answer"
-  question: string
-  points: number
-  options?: string[]
-  correctAnswer?: string | number
-  explanation?: string
+  id: string;
+  type: "multiple-choice" | "essay" | "true-false" | "short-answer";
+  question: string;
+  points: number;
+  options?: string[];
+  correctAnswer?: string | number;
+  explanation?: string;
 }
 
-type FormStep = "test-details" | "questions"
+type FormStep = "test-details" | "questions";
 
 export function TestCreationForm() {
-  const [currentStep, setCurrentStep] = useState<FormStep>("test-details")
+  const [currentStep, setCurrentStep] = useState<FormStep>("test-details");
   const [testData, setTestData] = useState<TestData>({
     title: "",
     duration: "",
     startDate: "",
     startTime: "",
     weekNumber: "",
-  })
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+  });
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const validateStartTime = (time: string): boolean => {
-    if (!time) return false
-    const [hours] = time.split(":").map(Number)
-    return hours >= 9 && hours <= 17 // 9 AM to 5 PM
-  }
+    if (!time) return false;
+    const [hours] = time.split(":").map(Number);
+    return true; //hours >= 9 && hours <= 17 // 9 AM to 5 PM
+  };
 
-  const calculateEndDateTime = (startDate: string, startTime: string, durationMinutes: number): string => {
-    const startDateTime = new Date(`${startDate}T${startTime}`)
-    const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60000)
-    return endDateTime.toISOString()
-  }
+  const calculateEndDateTime = (
+    startDate: string,
+    startTime: string,
+    durationMinutes: number,
+  ): string => {
+    const startDateTime = new Date(`${startDate}T${startTime}`);
+    const endDateTime = new Date(
+      startDateTime.getTime() + durationMinutes * 60000,
+    );
+    return endDateTime.toISOString();
+  };
 
   const handleTestDataSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate start time
     if (!validateStartTime(testData.startTime)) {
-      setSubmitError("Start time must be between 9:00 AM and 5:00 PM")
-      return
+      setSubmitError("Start time must be between 9:00 AM and 5:00 PM");
+      return;
     }
 
     // Validate duration
-    const duration = Number.parseInt(testData.duration)
+    const duration = Number.parseInt(testData.duration);
     if (duration > 120) {
-      setSubmitError("Duration cannot exceed 120 minutes")
-      return
+      setSubmitError("Duration cannot exceed 120 minutes");
+      return;
     }
 
-    setSubmitError(null)
-    console.log("Test data saved:", testData)
-    setCurrentStep("questions")
-  }
+    setSubmitError(null);
+    console.log("Test data saved:", testData);
+    setCurrentStep("questions");
+  };
 
   const handleInputChange = (field: keyof TestData, value: string) => {
     setTestData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  };
 
   const handleAddQuestion = (question: Question) => {
-    setQuestions((prev) => [...prev, question])
-  }
+    setQuestions((prev) => [...prev, question]);
+  };
 
-  const handleEditQuestion = (questionId: string, updatedQuestion: Question) => {
-    setQuestions((prev) => prev.map((q) => (q.id === questionId ? updatedQuestion : q)))
-  }
+  const handleEditQuestion = (
+    questionId: string,
+    updatedQuestion: Question,
+  ) => {
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === questionId ? updatedQuestion : q)),
+    );
+  };
 
   const handleDeleteQuestion = (questionId: string) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId))
-  }
+    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+  };
 
   const createQuiz = async (quizData: any) => {
     try {
       const response = await apiFetch("/instructor/quizzes/", {
         method: "POST",
         body: JSON.stringify(quizData),
-      })
-      return response
+      });
+      return response;
     } catch (error) {
-      throw error
+      throw error;
     }
-  }
+  };
 
   const handleFinalSubmit = async () => {
     if (questions.length === 0) {
-      setSubmitError("Please add at least one question to the quiz.")
-      return
+      setSubmitError("Please add at least one question to the quiz.");
+      return;
     }
 
-    setIsSubmitting(true)
-    setSubmitError(null)
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       // Calculate start and end date times
-      const startDateTime = new Date(`${testData.startDate}T${testData.startTime}`)
-      const durationMinutes = Number.parseInt(testData.duration)
-      const endDateTime = calculateEndDateTime(testData.startDate, testData.startTime, durationMinutes)
+      const startDateTime = new Date(
+        `${testData.startDate}T${testData.startTime}`,
+      );
+      const durationMinutes = Number.parseInt(testData.duration);
+      const endDateTime = calculateEndDateTime(
+        testData.startDate,
+        testData.startTime,
+        durationMinutes,
+      );
 
       // Transform the data to match API format
       const quizData = {
@@ -134,12 +151,12 @@ export function TestCreationForm() {
           correct_answer: q.correctAnswer,
           explanation: q.explanation,
         })),
-      }
+      };
 
-      console.log("Submitting quiz data:", quizData)
-      const response = await createQuiz(quizData)
-      console.log("Quiz created successfully:", response)
-      setSubmitSuccess(true)
+      console.log("Submitting quiz data:", quizData);
+      const response = await createQuiz(quizData);
+      console.log("Quiz created successfully:", response);
+      setSubmitSuccess(true);
 
       // Reset form after successful submission
       setTimeout(() => {
@@ -149,22 +166,26 @@ export function TestCreationForm() {
           startDate: "",
           startTime: "",
           weekNumber: "",
-        })
-        setQuestions([])
-        setCurrentStep("test-details")
-        setSubmitSuccess(false)
-      }, 2000)
+        });
+        setQuestions([]);
+        setCurrentStep("test-details");
+        setSubmitSuccess(false);
+      }, 2000);
     } catch (error) {
-      console.error("Error creating quiz:", error)
-      setSubmitError(error instanceof Error ? error.message : "Failed to create quiz. Please try again.")
+      console.error("Error creating quiz:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Failed to create quiz. Please try again.",
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleBackToTestDetails = () => {
-    setCurrentStep("test-details")
-  }
+    setCurrentStep("test-details");
+  };
 
   // Success message component
   if (submitSuccess) {
@@ -178,16 +199,24 @@ export function TestCreationForm() {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
-          <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">Quiz Created Successfully!</h3>
-          <p className="text-center text-body-color dark:text-dark-6">
-            Your quiz &quot;{testData.title}&quot; has been created and is ready for students.
+          <h3 className="mb-2 text-xl font-bold text-dark dark:text-white">
+            Quiz Created Successfully!
+          </h3>
+          <p className="text-body-color text-center dark:text-dark-6">
+            Your quiz &quot;{testData.title}&quot; has been created and is ready
+            for students.
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (currentStep === "questions") {
@@ -204,10 +233,10 @@ export function TestCreationForm() {
         />
         {/* Error Message */}
         {submitError && (
-          <div className="mt-4 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+          <div className="mt-4 rounded-[7px] border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
             <div className="flex items-center">
               <svg
-                className="h-5 w-5 text-red-600 dark:text-red-400 mr-2"
+                className="mr-2 h-5 w-5 text-red-600 dark:text-red-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -225,21 +254,25 @@ export function TestCreationForm() {
         )}
         {/* Loading Overlay */}
         {isSubmitting && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-dark rounded-lg p-6 flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span className="text-dark dark:text-white">Creating quiz...</span>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="flex items-center space-x-3 rounded-lg bg-white p-6 dark:bg-gray-dark">
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+              <span className="text-dark dark:text-white">
+                Creating quiz...
+              </span>
             </div>
           </div>
         )}
       </div>
-    )
+    );
   }
 
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
       <div className="mb-7.5">
-        <h3 className="text-2xl font-bold text-dark dark:text-white">Create New Test</h3>
+        <h3 className="text-2xl font-bold text-dark dark:text-white">
+          Create New Test
+        </h3>
         <p className="text-body-color dark:text-dark-6">
           Fill out the form below to create a new test for your students
         </p>
@@ -279,7 +312,9 @@ export function TestCreationForm() {
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
-            <p className="mt-1 text-xs text-body-color dark:text-dark-6">Maximum 120 minutes</p>
+            <p className="text-body-color mt-1 text-xs dark:text-dark-6">
+              Maximum 120 minutes
+            </p>
           </div>
           <div className="w-full xl:w-1/2">
             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
@@ -322,16 +357,18 @@ export function TestCreationForm() {
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
-            <p className="mt-1 text-xs text-body-color dark:text-dark-6">Must be between 9:00 AM and 5:00 PM</p>
+            <p className="text-body-color mt-1 text-xs dark:text-dark-6">
+              Must be between 9:00 AM and 5:00 PM
+            </p>
           </div>
         </div>
 
         {/* Error Message */}
         {submitError && (
-          <div className="mb-4.5 rounded-[7px] bg-red-50 border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+          <div className="mb-4.5 rounded-[7px] border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
             <div className="flex items-center">
               <svg
-                className="h-5 w-5 text-red-600 dark:text-red-400 mr-2"
+                className="mr-2 h-5 w-5 text-red-600 dark:text-red-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -357,5 +394,5 @@ export function TestCreationForm() {
         </button>
       </form>
     </div>
-  )
+  );
 }

@@ -6,7 +6,7 @@ import { SubmissionGradingForm } from "./submission-grading-form";
 
 interface Answer {
   id: number;
-  question: number;
+  question_id: number;
   question_text: string;
   answer_text: string;
   points: number | null;
@@ -102,30 +102,6 @@ export function GradeSubmissionPage({
       setIsSaving(false);
     }
   };
-
-  const handleEditSingleAnswer = async (
-    answerId: number,
-    points: number,
-    feedback: string,
-  ) => {
-    try {
-      setError(null);
-
-      await apiFetch(`/instructor/answers/${answerId}/edit-grade/`, {
-        method: "PATCH",
-        body: JSON.stringify({ points, feedback }),
-      });
-
-      setSuccessMessage("Answer updated successfully!");
-      setTimeout(() => setSuccessMessage(null), 3000);
-
-      // Refresh submission data
-      await fetchSubmissionData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update answer");
-    }
-  };
-
   const handleEditOverallFeedback = async (feedback: string) => {
     try {
       setError(null);
@@ -134,10 +110,6 @@ export function GradeSubmissionPage({
         method: "PATCH",
         body: JSON.stringify({ feedback }),
       });
-
-      setSuccessMessage("Overall feedback updated successfully!");
-      setTimeout(() => setSuccessMessage(null), 3000);
-
       // Refresh submission data
       await fetchSubmissionData();
     } catch (err) {
@@ -347,16 +319,13 @@ export function GradeSubmissionPage({
       </div>
 
       {/* Grading Form */}
-      {questions.length > 0 && (
-        <SubmissionGradingForm
-          submission={submission}
-          questions={questions}
-          onGradeAllAnswers={handleGradeAllAnswers}
-          onEditSingleAnswer={handleEditSingleAnswer}
-          onEditOverallFeedback={handleEditOverallFeedback}
-          isSaving={isSaving}
-        />
-      )}
+      <SubmissionGradingForm
+        submission={submission}
+        questions={questions}
+        onGradeAllAnswers={handleGradeAllAnswers}
+        onEditOverallFeedback={handleEditOverallFeedback} //but on the same button with the grade
+        isSaving={isSaving}
+      />
 
       {/* Loading Overlay */}
       {isSaving && (
