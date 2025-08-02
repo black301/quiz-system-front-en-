@@ -28,6 +28,10 @@ export default function QuizGradingManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 5;
+
   useEffect(() => {
     fetchQuizzes();
   }, []);
@@ -39,7 +43,6 @@ export default function QuizGradingManagementPage() {
 
       const data = await apiFetch("/instructor/quizzes/");
 
-      // Fetch submission counts for each quiz
       const quizzesWithCounts = await Promise.all(
         data.map(async (quiz: Quiz) => {
           try {
@@ -71,7 +74,10 @@ export default function QuizGradingManagementPage() {
         }),
       );
 
-      setQuizzes(quizzesWithCounts);
+      setQuizzes(
+        quizzesWithCounts.sort((a, b) => b.id - a.id), // Latest first
+      );
+      setCurrentPage(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch quizzes");
     } finally {
@@ -87,7 +93,6 @@ export default function QuizGradingManagementPage() {
   const handleBackToList = () => {
     setViewMode("list");
     setSelectedQuiz(null);
-    // Refresh quiz list when returning
     fetchQuizzes();
   };
 
@@ -104,7 +109,21 @@ export default function QuizGradingManagementPage() {
     return Math.round(((quiz.graded_count || 0) / quiz.submission_count) * 100);
   };
 
-  // Submissions view
+  const filteredQuizzes = quizzes.filter((quiz) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      quiz.title.toLowerCase().includes(q) ||
+      quiz.course_name.toLowerCase().includes(q) ||
+      quiz.week_number.toString().includes(q)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredQuizzes.length / pageSize);
+  const paginatedQuizzes = filteredQuizzes.slice(
+    currentPage * pageSize,
+    currentPage * pageSize + pageSize,
+  );
+
   if (viewMode === "submissions" && selectedQuiz) {
     return (
       <QuizSubmissionsPage quizId={selectedQuiz.id} onBack={handleBackToList} />
@@ -114,7 +133,7 @@ export default function QuizGradingManagementPage() {
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
       {/* Header */}
-      <div className="mb-7.5 flex items-center justify-between">
+      <div className="mb-7.5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="text-2xl font-bold text-dark dark:text-white">
             Quiz Grading
@@ -123,28 +142,40 @@ export default function QuizGradingManagementPage() {
             Grade and manage quiz submissions
           </p>
         </div>
-        <button
-          onClick={fetchQuizzes}
-          className="flex items-center rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
-        >
-          <svg
-            className="mr-2 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="Search quizzes..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(0);
+            }}
+            className="w-56 rounded-lg border border-gray-300 px-4 py-2 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          />
+          <button
+            onClick={fetchQuizzes}
+            className="flex items-center rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          Refresh
-        </button>
+            <svg
+              className="mr-2 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Refresh
+          </button>
+        </div>
       </div>
 
-      {/* Loading State */}
+      {/* Loading & Error States */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
@@ -171,7 +202,7 @@ export default function QuizGradingManagementPage() {
             <p className="text-red-800 dark:text-red-200">{error}</p>
           </div>
         </div>
-      ) : quizzes.length === 0 ? (
+      ) : filteredQuizzes.length === 0 ? (
         <div className="py-12 text-center">
           <svg
             className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
@@ -190,11 +221,10 @@ export default function QuizGradingManagementPage() {
             No quizzes found
           </h3>
           <p className="text-body-color mt-2 dark:text-dark-6">
-            Create some quizzes to start grading submissions.
+            Try adjusting your search or filters.
           </p>
         </div>
       ) : (
-        /* Quiz Table */
         <div className="overflow-x-auto">
           <table className="w-full table-auto">
             <thead>
@@ -220,7 +250,7 @@ export default function QuizGradingManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {quizzes.map((quiz) => {
+              {paginatedQuizzes.map((quiz) => {
                 const gradingProgress = getGradingProgress(quiz);
                 return (
                   <tr
@@ -243,14 +273,12 @@ export default function QuizGradingManagementPage() {
                     <td className="px-4 py-4 text-dark dark:text-white">
                       {formatDate(quiz.end_date)}
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-dark dark:text-white">
-                          {quiz.submission_count || 0}
-                        </div>
-                        <div className="text-body-color text-xs dark:text-dark-6">
-                          submissions
-                        </div>
+                    <td className="px-4 py-4 text-center">
+                      <div className="text-lg font-semibold text-dark dark:text-white">
+                        {quiz.submission_count || 0}
+                      </div>
+                      <div className="text-body-color text-xs dark:text-dark-6">
+                        submissions
                       </div>
                     </td>
                     <td className="px-4 py-4">
@@ -290,6 +318,29 @@ export default function QuizGradingManagementPage() {
               })}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <div className="mt-4 flex items-center justify-between">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
+              disabled={currentPage === 0}
+              className="rounded-md bg-primary px-4 py-2 text-white disabled:cursor-not-allowed disabled:bg-gray-400"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-dark dark:text-white">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages - 1))
+              }
+              disabled={currentPage >= totalPages - 1}
+              className="rounded-md bg-primary px-4 py-2 text-white disabled:cursor-not-allowed disabled:bg-gray-400"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
