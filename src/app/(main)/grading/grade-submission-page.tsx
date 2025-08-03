@@ -61,7 +61,6 @@ export function GradeSubmissionPage({
       setSubmission(submissionData);
       const quizData = await apiFetch(`/quiz/${submissionData.quiz}/`);
       setQuestions(quizData.questions);
-      // alert(quizData.questions[0].question_text);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch submission data",

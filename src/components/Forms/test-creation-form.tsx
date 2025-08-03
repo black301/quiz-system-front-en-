@@ -4,6 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import { QuestionBuilder } from "./question-builder";
 import { apiFetch } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 interface TestData {
   title: string;
@@ -38,6 +39,7 @@ export function TestCreationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const router = useRouter();
 
   const validateStartTime = (time: string): boolean => {
     if (!time) return false;
@@ -170,6 +172,7 @@ export function TestCreationForm() {
         setQuestions([]);
         setCurrentStep("test-details");
         setSubmitSuccess(false);
+        router.push("/quizzes/viewquizzes");
       }, 2000);
     } catch (error) {
       console.error("Error creating quiz:", error);

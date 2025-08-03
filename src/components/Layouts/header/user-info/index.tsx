@@ -71,20 +71,6 @@ export function UserInfo() {
       >
         <h2 className="sr-only">User information</h2>
 
-        <div className="px-5 py-3.5">
-          <div className="max-w-full space-y-1 overflow-hidden text-base font-medium">
-            <div className="mb-1 break-words leading-none text-dark dark:text-white">
-              {user.name}
-            </div>
-            <div
-              className="overflow-hidden text-ellipsis break-all text-sm leading-tight text-gray-6"
-              style={{ maxWidth: "100%" }}
-            >
-              {user.email}
-            </div>
-          </div>
-        </div>
-
         <hr className="border-[#E8E8E8] dark:border-dark-3" />
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6 [&>*]:cursor-pointer">

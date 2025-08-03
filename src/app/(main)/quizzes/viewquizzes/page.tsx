@@ -166,9 +166,12 @@ export default function ViewQuizPage() {
       setIsLoadingQuestions(false);
     }
   };
-  const filteredQuizzes = quizzes.filter((quiz) =>
-    quiz.title.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredQuizzes = quizzes
+    .slice() // make a copy to avoid mutating original
+    .sort((a, b) => b.id - a.id) // sort by id descending
+    .filter((quiz) =>
+      quiz.title.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
 
   const totalPages = Math.ceil(filteredQuizzes.length / itemsPerPage);
   const paginatedQuizzes = filteredQuizzes.slice(
