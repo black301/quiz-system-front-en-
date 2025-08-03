@@ -277,7 +277,7 @@ export default function ForgotPasswordClient() {
                   Password Recovery
                 </h2>
                 <p className="mb-8 text-gray-600 dark:text-gray-300">
-                  We'll help you get back into your account
+                  We will help you get back into your account
                 </p>
                 <div className="mx-auto h-64 w-64">
                   <Image
