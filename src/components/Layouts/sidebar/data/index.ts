@@ -6,7 +6,7 @@ export const NAV_DATA = [
     items: [
       {
         title: "Dashboard",
-         url: "/",
+        url: "/",
         icon: Icons.HomeIcon,
         items: [],
       },
@@ -21,33 +21,31 @@ export const NAV_DATA = [
         icon: Icons.Table,
         url: "/courses",
         items: [],
-      }, 
-      { title: "Submissions",
+      },
+      {
+        title: "Submissions",
         icon: Icons.PieChart,
         url: "/grading/quiz-grading-management-page",
-        items: []
+        items: [],
       },
       {
         title: "Student management",
         icon: Icons.User,
         url: "/students/viewstudents",
         items: [],
-      }, 
-      { title: "Quizes",
-        icon: Icons.Authentication,
-        url: "/quizes",
-        items: [
-          {
-            title: "View Quizes",
-            url: "/quizes/viewquizes",
-          },
-          {
-            title: "Create Quiz",
-            url: "/quizes/createquiz",
-          },
-        ]
       },
-      
+      {
+        title: "view Quizzes",
+        icon: Icons.Authentication,
+        url: "/quizzes/viewquizzes",
+        items: [],
+      },
+      {
+        title: "Create Quizzes",
+        icon: Icons.Alphabet,
+        url: "/quizzes/createquiz",
+        items: [],
+      },
     ],
   },
 ];

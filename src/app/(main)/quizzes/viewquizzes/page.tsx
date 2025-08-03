@@ -38,6 +38,9 @@ export default function ViewQuizPage() {
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [questionsError, setQuestionsError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Fetch all quizzes
   useEffect(() => {
@@ -163,6 +166,15 @@ export default function ViewQuizPage() {
       setIsLoadingQuestions(false);
     }
   };
+  const filteredQuizzes = quizzes.filter((quiz) =>
+    quiz.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const totalPages = Math.ceil(filteredQuizzes.length / itemsPerPage);
+  const paginatedQuizzes = filteredQuizzes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   // Edit Mode - Show EditQuizForm
   if (viewMode === "edit" && selectedQuiz) {
@@ -403,7 +415,7 @@ export default function ViewQuizPage() {
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
       {/* Header */}
-      <div className="mb-7.5 flex items-center justify-between">
+      <div className="mb-7.5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="text-2xl font-bold text-dark dark:text-white">
             My Quizzes
@@ -412,25 +424,39 @@ export default function ViewQuizPage() {
             Manage and view all your course quizzes
           </p>
         </div>
-        <button
-          onClick={fetchQuizzes}
-          className="flex items-center rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
-        >
-          <svg
-            className="mr-2 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <input
+            type="text"
+            placeholder="Search qiuzzes..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset page
+            }}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          />
+
+          <button
+            onClick={fetchQuizzes}
+            className="flex items-center rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          Refresh
-        </button>
+            <svg
+              className="mr-2 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Loading State */}
@@ -482,6 +508,28 @@ export default function ViewQuizPage() {
             You haven&quot;t created any quizzes yet.
           </p>
         </div>
+      ) : filteredQuizzes.length === 0 ? (
+        <div className="py-12 text-center">
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium text-dark dark:text-white">
+            No quizzes found
+          </h3>
+          <p className="text-body-color mt-2 dark:text-dark-6">
+            Try adjusting your search or filters.
+          </p>
+        </div>
       ) : (
         /* Quiz Table */
         <div className="overflow-x-auto">
@@ -515,7 +563,7 @@ export default function ViewQuizPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {quizzes.map((quiz) => {
+              {paginatedQuizzes.map((quiz) => {
                 const status = getQuizStatus(quiz);
                 return (
                   <tr
@@ -574,6 +622,41 @@ export default function ViewQuizPage() {
               })}
             </tbody>
           </table>
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center space-x-2">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 disabled:opacity-50 dark:border-gray-600 dark:text-white"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`rounded border px-3 py-1 text-sm ${
+                      page === currentPage
+                        ? "bg-primary text-white"
+                        : "border-gray-300 text-gray-700 dark:border-gray-600 dark:text-white"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 disabled:opacity-50 dark:border-gray-600 dark:text-white"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

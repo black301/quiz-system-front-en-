@@ -2,24 +2,102 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { FormEvent, ChangeEvent } from "react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, FormEvent } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import "@/css/satoshi.css";
 import "@/css/style.css";
 
-export default function ForgotPasswordClient() {
-  const [email, setEmail] = useState<string>("");
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+const BASE_URL = "https://quizroom-backend-production.up.railway.app/api";
 
-  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setEmail(e.target.value);
+export default function ForgotPasswordClient() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const isPasswordValid = newPassword.length >= 8;
+  const passwordsMatch = newPassword === confirmPassword;
+
+  const handleSubmitEmail = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await fetch(`${BASE_URL}/auth/request-password-reset/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(data.detail);
+        setStep(2);
+      } else {
+        setError(data.detail || "Something went wrong.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmitOtp = async (e: FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log("Password reset requested for:", email);
-    setIsSubmitted(true);
+    setError("");
+    try {
+      const res = await fetch(`${BASE_URL}/auth/verify-otp/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(data.detail);
+        setStep(3);
+      } else {
+        setError(data.detail || "Invalid or expired OTP.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    }
+  };
+
+  const handleResetPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!isPasswordValid) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (!passwordsMatch) {
+      setError("Passwords do not match.");
+      return;
+    }
+    try {
+      const res = await fetch(`${BASE_URL}/auth/reset-password/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, new_password: newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage(data.detail);
+        setTimeout(() => {
+          router.push("/auth/sign-in");
+        }, 1500);
+      } else {
+        setError(data.detail || "Password reset failed.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    }
   };
 
   return (
@@ -27,9 +105,7 @@ export default function ForgotPasswordClient() {
       <div className="w-full max-w-4xl">
         <div className="overflow-hidden rounded-lg bg-white shadow-md dark:bg-gray-800">
           <div className="flex">
-            {/* Left Side - Form */}
             <div className="w-full p-8 lg:w-1/2 lg:p-12">
-              {/* Logo */}
               <div className="mb-8">
                 <Link href="/" className="inline-block">
                   <Image
@@ -49,154 +125,191 @@ export default function ForgotPasswordClient() {
                 </Link>
               </div>
 
-              {/* Header */}
               <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Reset Password
                 </h1>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  Enter your email address and we&apos;ll send you a link to reset
-                  your password
+                  {step === 1 && "Enter your email to receive a reset link"}
+                  {step === 2 && "Enter the OTP sent to your email"}
+                  {step === 3 && "Enter and confirm your new password"}
                 </p>
               </div>
 
-              {/* Success Message */}
-              {isSubmitted ? (
-                <div className="mb-6 rounded-md border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg
-                        className="h-5 w-5 text-green-400"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-green-700 dark:text-green-300">
-                        Password reset link has been sent to your email address.
-                      </p>
-                    </div>
-                  </div>
+              {message && (
+                <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                  {message}
                 </div>
-              ) : (
-                /* Form */
-                <form className="space-y-6" onSubmit={handleSubmit}>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={handleEmailChange}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder="john.doe@company.com"
-                    />
-                  </div>
+              )}
+              {error && (
+                <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                  {error}
+                </div>
+              )}
 
+              {step === 1 && (
+                <form onSubmit={handleSubmitEmail} className="space-y-4">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email Address"
+                    className="w-full rounded-md border px-3 py-2 dark:bg-gray-700 dark:text-white"
+                  />
                   <button
                     type="submit"
-                    className="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
+                    className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
                     Send Reset Link
                   </button>
                 </form>
               )}
 
-              {/* Additional Info */}
-              <div className="mt-6 rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-blue-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      If you don&apos;t receive an email within a few minutes, please
-                      contact the IT department for assistance.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation Links */}
-              <div className="mt-6 space-y-2 text-center">
-                <div>
-                  <Link
-                    href="/auth/sign-in"
-                    className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              {step === 2 && (
+                <form onSubmit={handleSubmitOtp} className="space-y-4">
+                  <input
+                    type="text"
+                    required
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter OTP"
+                    className="w-full rounded-md border px-3 py-2 dark:bg-gray-700 dark:text-white"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
-                    Back to Sign In
-                  </Link>
-                </div>
+                    Verify OTP
+                  </button>
+                </form>
+              )}
+
+              {step === 3 && (
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="New Password"
+                      className="w-full rounded-md border px-3 py-2 pr-10 dark:bg-gray-700 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-300"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
+                  {!isPasswordValid && newPassword && (
+                    <p className="text-sm text-red-500">
+                      Password must be at least 8 characters.
+                    </p>
+                  )}
+
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm Password"
+                      className={`w-full rounded-md border px-3 py-2 pr-10 ${
+                        confirmPassword
+                          ? passwordsMatch
+                            ? "border-green-500"
+                            : "border-red-500"
+                          : ""
+                      } dark:bg-gray-700 dark:text-white`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-300"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
+
+                  {!passwordsMatch && confirmPassword && (
+                    <p className="text-sm text-red-500">
+                      Passwords do not match.
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={!passwordsMatch || !isPasswordValid}
+                    className={`w-full rounded-md py-2 text-white ${
+                      passwordsMatch && isPasswordValid
+                        ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                        : "cursor-not-allowed bg-gray-400"
+                    }`}
+                  >
+                    Reset Password
+                  </button>
+                </form>
+              )}
+
+              <div className="mt-6 text-center">
+                <Link
+                  href="/auth/sign-in"
+                  className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  Back to Sign In
+                </Link>
               </div>
             </div>
 
-            {/* Right Side - Simple Branding */}
             <div className="hidden bg-gray-50 dark:bg-gray-700 lg:block lg:w-1/2">
-              <div className="flex h-full flex-col items-center justify-center p-12">
-                <div className="text-center">
-                  <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-                    Password Recovery
-                  </h2>
-                  <p className="mb-8 text-gray-600 dark:text-gray-300">
-                    We&apos;ll help you get back into your account
-                  </p>
-                  <div className="mx-auto h-64 w-64">
-                    <Image
-                      src="/images/grids/grid-02.svg"
-                      alt="Company Illustration"
-                      width={256}
-                      height={256}
-                      className="opacity-20 dark:opacity-10"
-                    />
-                  </div>
-
-                  {/* Steps */}
-                  <div className="mt-8 text-left">
-                    <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      How it works:
-                    </h3>
-                    <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                      <div className="flex items-center">
-                        <span className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                          1
-                        </span>
-                        Enter your email address
-                      </div>
-                      <div className="flex items-center">
-                        <span className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                          2
-                        </span>
-                        Check your email for reset link
-                      </div>
-                      <div className="flex items-center">
-                        <span className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                          3
-                        </span>
-                        Create a new password
-                      </div>
+              <div className="flex h-full flex-col items-center justify-center p-12 text-center">
+                <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+                  Password Recovery
+                </h2>
+                <p className="mb-8 text-gray-600 dark:text-gray-300">
+                  We'll help you get back into your account
+                </p>
+                <div className="mx-auto h-64 w-64">
+                  <Image
+                    src="/images/grids/grid-02.svg"
+                    alt="Illustration"
+                    width={256}
+                    height={256}
+                    className="opacity-20 dark:opacity-10"
+                  />
+                </div>
+                <div className="mt-8 text-left">
+                  <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+                    How it works:
+                  </h3>
+                  <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                    <div className="flex items-center">
+                      <span className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                        1
+                      </span>
+                      Enter your email address
+                    </div>
+                    <div className="flex items-center">
+                      <span className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                        2
+                      </span>
+                      Check your email for the OTP
+                    </div>
+                    <div className="flex items-center">
+                      <span className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                        3
+                      </span>
+                      Create a new password
                     </div>
                   </div>
                 </div>
@@ -208,7 +321,7 @@ export default function ForgotPasswordClient() {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            For technical support, contact IT department
+            For technical support, contact the IT department
           </p>
         </div>
       </div>

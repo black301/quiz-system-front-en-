@@ -1,11 +1,10 @@
-import { QuizesOverview } from "@/components/Charts/payments-overview";
+import { QuizzesOverview } from "@/components/Charts/payments-overview";
 import { CoursesOverview } from "@/components/Charts/weeks-profit";
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 import { Suspense } from "react";
 import { OverviewCardsGroup } from "./_components/overview-cards";
 import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
 import { UsedDevices } from "@/components/Charts/used-devices";
-
 
 type PropsType = {
   searchParams: Promise<{
@@ -24,7 +23,7 @@ export default async function Home({ searchParams }: PropsType) {
       </Suspense>
 
       <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
-        <QuizesOverview
+        <QuizzesOverview
           className="col-span-12 xl:col-span-7"
           key={extractTimeFrame("payments_overview")}
           timeFrame={extractTimeFrame("payments_overview")?.split(":")[1]}

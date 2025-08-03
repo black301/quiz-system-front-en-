@@ -15,7 +15,7 @@ const Chart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export function QuizesOverviewChart({ data }: PropsType) {
+export function QuizzesOverviewChart({ data }: PropsType) {
   const isMobile = useIsMobile();
 
   const options: ApexOptions = {

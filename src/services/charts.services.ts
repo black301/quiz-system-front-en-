@@ -37,7 +37,7 @@ export async function getDevicesUsedData(
   return data;
 }
 
-export async function getQuizesOverviewData(
+export async function getquizzesOverviewData(
   timeFrame?: "monthly" | "yearly" | (string & {}),
 ) {
   // Fake delay
