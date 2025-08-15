@@ -667,8 +667,8 @@ export default function ViewQuizPage() {
               </div>
 
               <p className="mb-4 text-sm text-gray-700 dark:text-gray-300 sm:mb-6 sm:text-base">
-                Are you sure you want to delete {selectedQuiz?.title}? This
-                will permanently remove the quiz and all associated data.
+                Are you sure you want to delete {selectedQuiz?.title}? This will
+                permanently remove the quiz and all associated data.
               </p>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-0 sm:space-x-3">

@@ -85,9 +85,41 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
     fetchQuizData();
   }, [fetchQuizData]);
 
+  useEffect(() => {
+    if (testData.startDateTime && testData.duration) {
+      const startDate = new Date(testData.startDateTime);
+      const durationMinutes = Number.parseInt(testData.duration);
+      const endDate = new Date(startDate.getTime() + durationMinutes * 60000); // Add duration in milliseconds
+
+      const calculatedEndTime = formatDateForInput(endDate.toISOString());
+      console.log(
+        "[v0] Auto-calculating end time:",
+        testData.startDateTime,
+        "+",
+        durationMinutes,
+        "minutes =",
+        calculatedEndTime,
+      );
+
+      setTestData((prev) => ({
+        ...prev,
+        endDateTime: calculatedEndTime,
+      }));
+    }
+  }, [testData.startDateTime, testData.duration]);
+
   const formatDateForInput = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toISOString().slice(0, 16);
+    // Get local time instead of UTC to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+    console.log("[v0] Formatting date:", dateString, "->", formattedDate);
+    return formattedDate;
   };
 
   const handleTestDataSubmit = (e: React.FormEvent) => {
@@ -142,17 +174,28 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
     setSubmitError(null);
 
     try {
+      console.log("[v0] Original start time:", testData.startDateTime);
+      console.log("[v0] Original end time:", testData.endDateTime);
+
+      const startDate = new Date(testData.startDateTime);
+      const endDate = new Date(testData.endDateTime);
+
+      console.log("[v0] Parsed start date:", startDate);
+      console.log("[v0] Parsed end date:", endDate);
+      console.log("[v0] Start ISO:", startDate.toISOString());
+      console.log("[v0] End ISO:", endDate.toISOString());
+
       // Transform the data to match API format
       const quizData = {
         title: testData.title,
         week_number: Number.parseInt(testData.weekNumber),
-        start_date: new Date(testData.startDateTime).toISOString(),
-        end_date: new Date(testData.endDateTime).toISOString(),
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
         duration: Number.parseInt(testData.duration),
         total_points: questions.reduce((sum, q) => sum + q.points, 0),
       };
 
-      console.log("Updating quiz data:", quizData);
+      console.log("[v0] Updating quiz data:", quizData);
       const response = await updateQuiz(quizData);
 
       // Handle questions separately
@@ -370,83 +413,104 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
       )}
 
       <form onSubmit={handleTestDataSubmit}>
-        {/* Test Name Row */}
-        <div className="mb-4.5">
-          <div className="w-full">
-            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              Test Name <span className="text-red">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Enter test name"
-              value={testData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              required
-              className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-            />
-          </div>
+        {/* Test Name */}
+        <div className="mb-6">
+          <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+            Test Name <span className="text-red">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="Enter test name"
+            value={testData.title}
+            onChange={(e) => handleInputChange("title", e.target.value)}
+            required
+            className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+          />
         </div>
 
-        {/* Duration and Week Number Row */}
-        <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
-          <div className="w-full xl:w-1/2">
-            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              Duration (minutes) <span className="text-red">*</span>
-            </label>
-            <input
-              type="number"
-              placeholder="Enter duration in minutes"
-              value={testData.duration}
-              onChange={(e) => handleInputChange("duration", e.target.value)}
-              min="1"
-              required
-              className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-            />
-          </div>
-          <div className="w-full xl:w-1/2">
-            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+        {/* Test Details Grid - matching view page layout */}
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:gap-4">
+          <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800 sm:p-4">
+            <h4 className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
               Week Number <span className="text-red">*</span>
-            </label>
+            </h4>
             <input
               type="number"
-              placeholder="Enter week number"
+              placeholder="Week"
               value={testData.weekNumber}
               onChange={(e) => handleInputChange("weekNumber", e.target.value)}
               min="1"
               required
-              className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+              className="w-full border-0 bg-transparent p-0 text-base font-semibold text-dark outline-none dark:text-white sm:text-lg"
             />
+          </div>
+          <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800 sm:p-4">
+            <h4 className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+              Duration (minutes) <span className="text-red">*</span>
+            </h4>
+            <input
+              type="number"
+              placeholder="Minutes"
+              value={testData.duration}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Prevent entering values greater than 120
+                if (
+                  value === "" ||
+                  (Number(value) >= 1 && Number(value) <= 120)
+                ) {
+                  handleInputChange("duration", value);
+                }
+              }}
+              min="1"
+              max="120"
+              required
+              className="w-full border-0 bg-transparent p-0 text-base font-semibold text-dark outline-none dark:text-white sm:text-lg"
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Maximum 120 minutes
+            </p>
+          </div>
+          <div className="col-span-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-800 sm:p-4 md:col-span-2">
+            <h4 className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+              Total Points
+            </h4>
+            <p className="text-base font-semibold text-dark dark:text-white sm:text-lg">
+              {questions.reduce((sum, q) => sum + q.points, 0)} pts
+            </p>
           </div>
         </div>
 
-        {/* Start Date and Time Row */}
-        <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
-          <div className="w-full xl:w-1/2">
-            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              Start Date & Time <span className="text-red">*</span>
-            </label>
-            <input
-              type="datetime-local"
-              value={testData.startDateTime}
-              onChange={(e) =>
-                handleInputChange("startDateTime", e.target.value)
-              }
-              required
-              className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-            />
-          </div>
-          <div className="w-full xl:w-1/2">
-            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-              End Date & Time <span className="text-red">*</span>
-            </label>
-            <input
-              type="datetime-local"
-              value={testData.endDateTime}
-              onChange={(e) => handleInputChange("endDateTime", e.target.value)}
-              required
-              min={testData.startDateTime}
-              className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-            />
+        {/* Schedule Section - matching view page layout */}
+        <div className="mb-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+          <h4 className="mb-3 text-base font-semibold text-dark dark:text-white sm:text-lg">
+            Schedule
+          </h4>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            <div>
+              <label className="mb-2 block text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+                Start Date & Time <span className="text-red">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={testData.startDateTime}
+                onChange={(e) =>
+                  handleInputChange("startDateTime", e.target.value)
+                }
+                required
+                className="w-full rounded-[7px] border-[1.5px] border-stroke bg-white px-3 py-2 text-sm text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary sm:text-base"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+                End Date & Time (Auto-calculated)
+              </label>
+              <div className="w-full rounded-[7px] border-[1.5px] border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 sm:text-base">
+                {testData.endDateTime
+                  ? new Date(testData.endDateTime).toLocaleString()
+                  : "Set start time and duration"}
+              </div>
+            </div>
           </div>
         </div>
 
