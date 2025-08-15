@@ -51,6 +51,9 @@ export function GradeSubmissionPage({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isLoadingRecording, setIsLoadingRecording] = useState(false);
+  const [recordingError, setRecordingError] = useState<string | null>(null);
+
   const fetchSubmissionData = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -73,6 +76,36 @@ export function GradeSubmissionPage({
   useEffect(() => {
     fetchSubmissionData();
   }, [fetchSubmissionData]);
+
+  const handleShowRecording = async () => {
+    if (!submission) return;
+
+    try {
+      setIsLoadingRecording(true);
+      setRecordingError(null);
+
+      const response = await apiFetch(
+        `/quiz/${submission.quiz}/student/${submission.student}/recording/`,
+      );
+
+      if (response.status === "success" && response.video_url) {
+        // Open the video in a new tab
+        window.open(response.video_url, "_blank");
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("No recording found")) {
+        setRecordingError("No recording found for this submission");
+      } else {
+        setRecordingError(
+          err instanceof Error ? err.message : "Failed to load recording",
+        );
+      }
+      // Clear error after 5 seconds
+      setTimeout(() => setRecordingError(null), 5000);
+    } finally {
+      setIsLoadingRecording(false);
+    }
+  };
 
   const handleGradeAllAnswers = async (
     gradedAnswers: Array<{
@@ -101,6 +134,7 @@ export function GradeSubmissionPage({
       setIsSaving(false);
     }
   };
+
   const handleEditOverallFeedback = async (feedback: string) => {
     try {
       setError(null);
@@ -236,6 +270,22 @@ export function GradeSubmissionPage({
               {submission.status.charAt(0).toUpperCase() +
                 submission.status.slice(1)}
             </div>
+            <button
+              onClick={handleShowRecording}
+              disabled={isLoadingRecording}
+              className="mt-3 flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLoadingRecording ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  Show Recording
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -285,6 +335,29 @@ export function GradeSubmissionPage({
           </div>
         )}
 
+        {recordingError && (
+          <div className="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
+            <div className="flex items-center">
+              <svg
+                className="mr-2 h-5 w-5 text-orange-600 dark:text-orange-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p className="text-orange-800 dark:text-orange-200">
+                {recordingError}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Student Info */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
@@ -322,7 +395,7 @@ export function GradeSubmissionPage({
         submission={submission}
         questions={questions}
         onGradeAllAnswers={handleGradeAllAnswers}
-        onEditOverallFeedback={handleEditOverallFeedback} //but on the same button with the grade
+        onEditOverallFeedback={handleEditOverallFeedback}
         isSaving={isSaving}
       />
 

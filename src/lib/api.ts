@@ -80,7 +80,17 @@ export async function apiFetch(
     ...options,
   });
 
-  const data = await response.json();
+  // Safely handle empty responses
+  const text = await response.text();
+  let data: any = null;
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.warn("Failed to parse JSON:", err);
+    }
+  }
 
   if (!response.ok) {
     const isExpired =
@@ -96,12 +106,11 @@ export async function apiFetch(
       } catch (error) {
         // Refresh failed: logout user
         logoutUser();
-
         throw new Error("Session expired. Please sign in again.");
       }
     }
 
-    throw new Error(data.detail || "API Error");
+    throw new Error(data?.detail || "API Error");
   }
 
   return data;
