@@ -191,8 +191,7 @@ export default function CourseManagementPage() {
               <span
                 className={`rounded-full px-3 py-1 text-sm font-medium ${getLevelBadgeColor(selectedCourse.level)}`}
               >
-                Level {selectedCourse.level} -{" "}
-                {getLevelName(selectedCourse.level)}
+                {selectedCourse.level} - {getLevelName(selectedCourse.level)}
               </span>
             </div>
           </div>
@@ -361,7 +360,7 @@ export default function CourseManagementPage() {
                       <span
                         className={`rounded-full px-2 py-1 text-xs font-medium ${getLevelBadgeColor(student.level)}`}
                       >
-                        Level {student.level}
+                        {student.level}
                       </span>
                     </div>
 

@@ -31,7 +31,7 @@ export function TestCreationForm() {
   const [testData, setTestData] = useState<TestData>({
     title: "",
     duration: "",
-    startDate: "",
+    startDate: new Date().toISOString().split("T")[0],
     startTime: "",
     weekNumber: "",
   });
@@ -61,6 +61,17 @@ export function TestCreationForm() {
 
   const handleTestDataSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const selectedDate = new Date(testData.startDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+    if (selectedDate < today) {
+      setSubmitError(
+        "Start date cannot be in the past. Please select today or a future date.",
+      );
+      return;
+    }
 
     // Validate start time
     if (!validateStartTime(testData.startTime)) {
@@ -165,7 +176,7 @@ export function TestCreationForm() {
         setTestData({
           title: "",
           duration: "",
-          startDate: "",
+          startDate: new Date().toISOString().split("T")[0],
           startTime: "",
           weekNumber: "",
         });
@@ -345,9 +356,13 @@ export function TestCreationForm() {
               type="date"
               value={testData.startDate}
               onChange={(e) => handleInputChange("startDate", e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
               required
               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
             />
+            <p className="text-body-color mt-1 text-xs dark:text-dark-6">
+              Select today or a future date
+            </p>
           </div>
           <div className="w-full xl:w-1/2">
             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">

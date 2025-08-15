@@ -122,8 +122,29 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
     return formattedDate;
   };
 
+  const getTodayDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const handleTestDataSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const selectedDate = new Date(testData.startDateTime);
+    const now = new Date();
+
+    if (selectedDate < now) {
+      setSubmitError(
+        "Start date and time cannot be in the past. Please select today or a future date.",
+      );
+      return;
+    }
+
     console.log("Test data saved:", testData);
     setCurrentStep("questions");
   };
@@ -497,9 +518,13 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
                 onChange={(e) =>
                   handleInputChange("startDateTime", e.target.value)
                 }
+                min={getTodayDateTime()}
                 required
                 className="w-full rounded-[7px] border-[1.5px] border-stroke bg-white px-3 py-2 text-sm text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary sm:text-base"
               />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Must be today or later
+              </p>
             </div>
             <div>
               <label className="mb-2 block text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
