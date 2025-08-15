@@ -169,8 +169,23 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
     );
   };
 
-  const handleDeleteQuestion = (questionId: string) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (questionId.startsWith("new-")) {
+      // Just remove from local state if it's a new question
+      setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    } else {
+      // Delete from server using the specific API endpoint
+      try {
+        await apiFetch(`/instructor/questions/${questionId}/remove/`, {
+          method: "DELETE",
+        });
+        setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+      } catch (error) {
+        setSubmitError(
+          error instanceof Error ? error.message : "Failed to delete question",
+        );
+      }
+    }
   };
 
   const updateQuiz = async (quizData: any) => {
@@ -182,6 +197,39 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
       return response;
     } catch (error) {
       throw error;
+    }
+  };
+
+  const updateQuestions = async () => {
+    // Handle question updates and deletions using the specific API endpoints
+    for (const question of questions) {
+      if (question.id.startsWith("new-")) {
+        // This is a new question - add it (assuming there's an add endpoint)
+        const questionData = {
+          question_text: question.question,
+          question_type: question.type,
+          points: question.points,
+          correct_answer: question.correctAnswer || null,
+          options: question.options,
+          explanation: question.explanation,
+        };
+
+        await apiFetch(`/instructor/quizzes/${quizId}/questions/create/`, {
+          method: "POST",
+          body: JSON.stringify(questionData),
+        });
+      } else {
+        // This is an existing question - update it using the specific API
+        const questionData = {
+          question_text: question.question,
+          points: question.points,
+        };
+
+        await apiFetch(`/instructor/questions/${question.id}/edit/`, {
+          method: "PATCH",
+          body: JSON.stringify(questionData),
+        });
+      }
     }
   };
 
@@ -241,40 +289,39 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
     }
   };
 
-  const updateQuestions = async () => {
-    // This is a simplified approach - in a real app, you'd want to:
-    // 1. Compare existing questions with new ones
-    // 2. Update changed questions using PATCH /instructor/questions/<id>/edit/
-    // 3. Delete removed questions using DELETE /instructor/questions/<id>/remove/
-    // 4. Add new questions using POST
+  const deleteQuiz = async () => {
+    try {
+      const response = await apiFetch(`/instructor/quizzes/${quizId}/remove/`, {
+        method: "DELETE",
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
-    for (const question of questions) {
-      if (question.id.startsWith("new-")) {
-        // This is a new question - add it
-        const questionData = {
-          question_text: question.question,
-          question_type: question.type,
-          points: question.points,
-          correct_answer: question.correctAnswer || null,
-          options: question.options,
-          explanation: question.explanation,
-        };
+  const handleDeleteQuiz = async () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this quiz? This action cannot be undone.",
+      )
+    ) {
+      setIsSubmitting(true);
+      setSubmitError(null);
 
-        await apiFetch(`/instructor/quizzes/${quizId}/questions/`, {
-          method: "POST",
-          body: JSON.stringify(questionData),
-        });
-      } else {
-        // This is an existing question - update it
-        const questionData = {
-          question_text: question.question,
-          points: question.points,
-        };
-
-        await apiFetch(`/instructor/questions/${question.id}/edit/`, {
-          method: "PATCH",
-          body: JSON.stringify(questionData),
-        });
+      try {
+        await deleteQuiz();
+        console.log("Quiz deleted successfully");
+        onBack(); // Go back to quiz list
+      } catch (error) {
+        console.error("Error deleting quiz:", error);
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : "Failed to delete quiz. Please try again.",
+        );
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -403,12 +450,37 @@ export function EditQuizForm({ quizId, onBack }: EditQuizFormProps) {
           </svg>
           Back to Quiz List
         </button>
-        <h3 className="text-2xl font-bold text-dark dark:text-white">
-          Edit Quiz
-        </h3>
-        <p className="text-body-color dark:text-dark-6">
-          Update the quiz details below
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-dark dark:text-white">
+              Edit Quiz
+            </h3>
+            <p className="text-body-color dark:text-dark-6">
+              Update the quiz details below
+            </p>
+          </div>
+          {/* Delete Quiz Button */}
+          <button
+            onClick={handleDeleteQuiz}
+            className="flex items-center rounded-[7px] bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+            disabled={isSubmitting}
+          >
+            <svg
+              className="mr-2 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Delete Quiz
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
