@@ -264,9 +264,9 @@ export default function StudentManagementPage() {
                 >
                   <Trash2 className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">
-                    {isLoading ? "Removing..." : "Remove"}
+                    {isLoading ? "Deleting..." : "Delete"}
                   </span>
-                  <span className="sm:hidden">Remove</span>
+                  <span className="sm:hidden">Delete Student</span>
                 </button>
               </div>
             </div>
@@ -392,11 +392,10 @@ export default function StudentManagementPage() {
               {/* Content */}
               <div className="mb-4">
                 <p className="mb-4 text-sm text-gray-600 dark:text-gray-300 sm:text-base">
-                  Are you sure you want to remove{" "}
+                  Are you sure you want to Delete{" "}
                   <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {selectedStudent.name}
                   </span>{" "}
-                  from your course? This action cannot be undone.
                 </p>
 
                 <div className="rounded-lg bg-red-50 p-3 dark:bg-red-900/20 sm:p-4">
@@ -405,7 +404,7 @@ export default function StudentManagementPage() {
                     <div className="text-xs text-red-800 dark:text-red-200 sm:text-sm">
                       <p className="mb-1 font-medium">This will:</p>
                       <ul className="list-inside list-disc space-y-1 text-red-700 dark:text-red-300">
-                        <li>Remove the student from your course</li>
+                        <li>Delete the student from all courses</li>
                         <li>Revoke their access to course materials</li>
                         <li>Delete their progress data</li>
                       </ul>
@@ -431,12 +430,12 @@ export default function StudentManagementPage() {
                   {isLoading ? (
                     <>
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Removing...
+                      Deleting...
                     </>
                   ) : (
                     <>
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Remove Student
+                      Delete Student
                     </>
                   )}
                 </button>
