@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
+import { METHODS } from "node:http";
 
 interface Course {
   id: number;
@@ -29,7 +30,9 @@ interface StudentProgressResponse {
   course_name: string;
   student_progress: StudentProgress[];
 }
-
+interface StudentProgressApiResponse {
+  results: StudentProgressResponse[];
+}
 type ViewMode = "list" | "detail";
 
 export default function CourseManagementPage() {
@@ -77,15 +80,17 @@ export default function CourseManagementPage() {
       setIsLoadingStudents(false);
     }
   };
-
   const fetchStudentProgress = async () => {
     try {
       setIsLoadingProgress(true);
       setProgressError(null);
-      const data: StudentProgressResponse = await apiFetch(
+
+      const data: StudentProgressApiResponse = await apiFetch(
         "/instructor/statistics/student-progress/",
       );
-      setStudentProgress(data.student_progress);
+      // grab the first course (if only one is expected)
+      const firstCourse = data.results[0];
+      setStudentProgress(firstCourse?.student_progress || []);
     } catch (err) {
       setProgressError(
         err instanceof Error ? err.message : "Failed to fetch student progress",
@@ -379,15 +384,15 @@ export default function CourseManagementPage() {
                               {progress.completed_quizzes}
                             </div>
                             <div className="text-body-color text-xs dark:text-dark-6">
-                              Completed
+                              Completed Quizzes
                             </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                            <div className="text-lg font-bold text-red-600 dark:text-red-400">
                               {progress.pending_quizzes}
                             </div>
                             <div className="text-body-color text-xs dark:text-dark-6">
-                              Pending
+                              not attended Quizzes
                             </div>
                           </div>
                         </div>
