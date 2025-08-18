@@ -1,5 +1,4 @@
 "use client";
-
 import { EmailIcon, UserIcon } from "@/assets/icons";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
