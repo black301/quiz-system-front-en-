@@ -1,5 +1,4 @@
 "use client";
-
 import { EmailIcon } from "@/assets/icons";
 import Link from "next/link";
 import type React from "react";

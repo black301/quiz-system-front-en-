@@ -58,12 +58,8 @@ export default function SignIn() {
               <div className="flex h-full flex-col items-center justify-center p-12">
                 <div className="text-center">
                   <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-                    Company Portal
+                    Quiz Room system
                   </h2>
-                  <p className="mb-8 text-gray-600 dark:text-gray-300">
-                    Internal system for authorized personnel only
-                  </p>
-
                   <div className="mx-auto h-64 w-64">
                     <Image
                       src="/images/grids/grid-02.svg"
