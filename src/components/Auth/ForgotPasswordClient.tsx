@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import "@/css/satoshi.css";
 import "@/css/style.css";
 
-const BASE_URL = "https://quizroom-backend-production.up.railway.app/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function ForgotPasswordClient() {
   const router = useRouter();
